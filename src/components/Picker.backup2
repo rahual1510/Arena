@@ -1,0 +1,100 @@
+import React, { Component, useEffect } from 'react'
+import { Image, TouchableOpacity, Platform } from 'react-native'
+import Images from '../util/images';
+import EStyleSheet from 'react-native-extended-stylesheet';
+import SelectInput from 'react-native-select-input-ios'
+import countryList from '../util/countrycodes'
+
+var countries = []
+var options = []
+
+function getCountries(fnc) {
+
+    let arr = []
+    countryList.map((item, index) => {
+        let country = { value: index, label: item.name }
+        arr.push(country)
+    })
+    let i = countryList.findIndex(obj=>obj.code=='US')
+    fnc(i)
+    return arr
+
+}
+
+function getList(list, fnc) {
+    let arr = []
+
+    list.map((item, index)=>{
+        let listItem = { value: index, label: item}
+        arr.push(listItem)
+    })
+
+    fnc(0)
+    return arr
+
+}
+
+const PickerComponent = (props) => {
+
+    const { disabled, country, value, list, enabled, fnc } = props
+
+    countries = country? countries.length ? countries : getCountries(fnc) : []
+
+    options = country? [] : options.length ? options : getList(list, fnc)
+
+    useEffect(() => {
+        return () => {
+          countries=[]
+        }
+        
+    }, []);
+
+    return (
+        <TouchableOpacity activeOpacity={1} style={[Styles.borderBottom, { marginBottom: dp(15), flexDirection: 'row', alignItems: 'center' }]} disabled={disabled} >
+
+            {country ?
+                <Image source={{ uri: `https://www.countryflags.io/${countryList[value].code}/flat/64.png` }} style={Styles.flag} />
+                : null}
+
+            {country && Platform.OS == 'ios' ? <Image source={Images.downarrow} style={Styles.downArrow} /> : null}
+            {/* , transform: [{ scaleX:  .85  }, { scaleY:  .85 }] */}
+            {/* left:this.props.country?null:-2, */}
+            <SelectInput
+                value={value}
+                options={country? countries : options}
+
+                style={{ width: country ? Platform.OS == 'ios' ? '80%' : '100%' : Platform.OS == 'ios' ? '90%' : '120%', height: dp(40), justifyContent: 'center' }}
+
+                labelStyle={{ color: value == 0 || enabled == false ? '#909090' : null, fontSize: dp(13), transform: Platform.OS == 'android' ? [{ scaleX: .85 }, { scaleY: .85 }] : [], left: Platform.OS == 'android' ? country ? null : -dp(30) : null }}
+
+                enabled={enabled}
+                onSubmitEditing={(value) => fnc(value)}
+            />
+
+            {country ? null : Platform.OS == 'ios' ? <Image source={Images.downarrow} style={Styles.downArrow} /> : null}
+
+        </TouchableOpacity>
+    )
+}
+
+
+const Styles = EStyleSheet.create({
+    borderBottom: {
+        borderBottomColor: '#E1E3E3',
+        borderBottomWidth: 1
+    },
+    flag: {
+        width: '18rem',
+        height: '18rem',
+        resizeMode: 'contain',
+        marginHorizontal: '4rem'
+    },
+    downArrow: {
+        width: '12rem',
+        height: '12rem',
+        resizeMode: 'contain',
+        marginHorizontal: '4rem'
+    }
+})
+
+export default PickerComponent

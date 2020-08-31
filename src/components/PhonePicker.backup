@@ -1,0 +1,159 @@
+import React, { Component } from 'react'
+import { Text, Image, View, Platform, TextInput, Animated } from 'react-native'
+import Images from '../util/images';
+import EStyleSheet from 'react-native-extended-stylesheet';
+import SelectInput from 'react-native-select-input-ios'
+import countryList from '../util/countrycodes'
+import strings from '../util/strings';
+
+var countries = []
+var isoCodes = []
+
+class PhonePicker extends Component {
+
+    constructor(props) {
+        super(props) 
+        this.anim = new Animated.Value(0)
+        this.state = {
+            focused:false,
+        }
+    }
+
+    underLine() {
+        this.setState({focused:true});
+        Animated.timing(this.anim,{
+            toValue:1,
+            duration:300,
+            delay:200
+        }).start()
+    }
+
+    componentDidMount() {
+        this.getCountryCodes()
+    }
+
+    getCountryCodes() {
+
+        countryList.map((item,index)=> {
+            let code = {value:index, label: `${item.name} ${item.dial_code}`}
+            isoCodes.push(code)
+        })
+
+        let i = countryList.findIndex(obj=>obj.code=='US')
+        this.props.fnc(i)
+    }
+
+    componentWillUnmount() {
+        isoCodes = []
+    }
+
+    onChangeNumber(number) {
+        const {onChange, fnc} = this.props
+
+        onChange(number)
+
+        let i = countryList.findIndex((obj)=>obj.dial_code==number)
+
+        if(i>=0) {
+            fnc(i)
+            onChange('')
+        }
+    }
+
+    render() {
+        const { label, enabled, valueInput, onChange, value, list, fnc } = this.props
+
+        underline = this.anim.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['0%', '100%'],
+        });
+
+        return (
+        <View style={Styles.borderBottom}  >
+            {this.state.focused?<Text style={Styles.inputLabel} >{label}</Text>:null}
+            
+            <View activeOpacity={1} style={{flexDirection:'row', alignItems:'center'}} >
+                <Image source={{ uri: `https://www.countryflags.io/${countryList[value].code}/flat/64.png` }} style={Styles.flag} />
+                
+                {Platform.OS=='ios' ?<Image source={Images.downarrow} style={Styles.downArrow} />:null}
+
+                <SelectInput 
+                    value={value} 
+                    options={isoCodes} 
+                    style={{width:Platform.OS=='android'?dp(10):0, height:dp(40), justifyContent:'center' }} 
+                    labelStyle={{fontSize:dp(13), color:value==0 || enabled==false ?'#909090': null, width:Platform.OS=='android'? dp(30):0}}
+                    enabled={enabled}
+                    onSubmitEditing={(value)=>fnc(value)}
+                    ref={refs=>this.picker=refs}
+                />
+                <Text onPress={()=>this.picker.focus()} style={{marginHorizontal:dp(4), color:enabled?null:'#909090' }} >{value>=0?countryList[value].dial_code:null}</Text>
+
+                <TextInput 
+                    placeholder={strings.phone} 
+                    ref={refs=>this.input=refs}  
+                    value={valueInput} 
+                    onChangeText={(text)=>this.onChangeNumber(text)} 
+                    style={Styles.textInput} 
+                    onFocus={()=>this.underLine()} 
+                    placeholderTextColor='#909090' 
+                    onBlur={()=>{
+                        this.setState({focused:false});
+                        this.anim.setValue(0) 
+                    }} 
+                    maxLength={10} 
+                    keyboardType='phone-pad'
+                    editable={enabled}
+                />
+
+            </View>
+
+            <Animated.View style={[Styles.underline,{width:underline}]} />
+        </View>
+        )
+    }
+}
+
+const Styles = EStyleSheet.create({
+    container: {
+        flexGrow:1,
+        width:'100%',
+        paddingBottom:'20rem' 
+    },
+    borderBottom: {
+        borderBottomColor: '#E1E3E3', 
+        borderBottomWidth:1,
+        marginBottom:'15rem'
+    },
+    textInput: {
+        // marginTop:'5rem',
+        fontSize:'13rem',
+        // paddingVertical:'4rem',
+        width:'60%',
+        textAlignVertical:'center'
+    },
+    inputLabel: {
+        color:'$theme', 
+        fontSize:'15rem'
+    },
+    underline: {
+        zIndex:10, 
+        position:'absolute', 
+        bottom:-1,
+        height:1, 
+        backgroundColor:'$theme' 
+    },
+    flag: {
+        width: '18rem',
+        height: '18rem',
+        resizeMode: 'contain',
+        marginHorizontal: '4rem'
+    },
+    downArrow: {
+        width: '12rem',
+        height: '12rem',
+        resizeMode: 'contain',
+        marginHorizontal: '2rem'
+    }
+})
+
+export default PhonePicker
