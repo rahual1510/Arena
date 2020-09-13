@@ -1,7 +1,11 @@
-import React, { Component } from 'react'
-import { View, Text, Image, TextInput, TouchableOpacity, Modal } from 'react-native'
-import { connect } from 'react-redux'
-import Header from '../../components/Header'
+/* eslint-disable react-native/no-inline-styles */
+/* eslint-disable eqeqeq */
+/* eslint-disable no-alert */
+/* eslint-disable prettier/prettier */
+import React, { Component } from 'react';
+import { View, Text, Image, TextInput, TouchableOpacity, Modal } from 'react-native';
+import { connect } from 'react-redux';
+import Header from '../../components/Header';
 import Styles from './CreateEventStyle';
 import strings from '../../util/strings';
 import Images from '../../util/images';
@@ -18,22 +22,22 @@ import types from '../../types';
 import * as Validations from '../../util/Validations';
 import countryList from '../../util/countrycodes';
 import Loader from '../../components/Loader';
-import moment from "moment";
+import moment from 'moment';
 import LinearGradient from 'react-native-linear-gradient';
 import { thisExpression } from '@babel/types';
-import DatePicker from 'react-native-datepicker'
-dp = (size) => EStyleSheet.value(size + 'rem')
-let sport = { id: -1, level: -1 }
+import DatePicker from 'react-native-datepicker';
+const dp = (size) => EStyleSheet.value(size + 'rem');
+let sport = { id: -1, level: -1 };
 export class CreateEvent extends Component {
 
     navigate(type) {
 
-        this.props.navigation.navigate('Info', { type: type == 0 ? 'terms' : type == 1 ? 'privacy' : 'creation' })
+        this.props.navigation.navigate('Info', { type: type == 0 ? 'terms' : type == 1 ? 'privacy' : 'creation' });
     }
 
 
     constructor(props) {
-        super(props)
+        super(props);
         this.state = {
             name: '',
             lat: '',
@@ -54,70 +58,69 @@ export class CreateEvent extends Component {
             recurrence: 0,
             sport_value: '',
             sports: [
-                { id: -1, level: -1 }
+                { id: -1, level: -1 },
             ],
             sportValues: [-1],
             abilityInfo: '',
             termsCheck: false,
             usertype: '',
-            age_range: '',
             location: '',
             low: 18,
             high: 100,
             recur: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-            show: ''
-        }
-        this.state.user_type = this.props.userProfile.user_type
+            show: '',
+        };
+        this.state.user_type = this.props.userProfile.user_type;
         if (this.props.userProfile.user_type == 1) {
-            this.state.usertype = true
+            this.state.usertype = true;
         }
-        this.state.age_range = this.state.low + '-' + this.state.high
+        this.state.age_range = this.state.low + '-' + this.state.high;
     }
 
     componentDidMount() {
-        const { sports } = this.props.userProfile
-        let values = []
+        const { sports } = this.props.userProfile;
+        let values = [];
         if (this.props.userProfile.length > 0) {
             sports.map(item => {
-                let x = this.props.categories.findIndex(obj => obj.id != item.id)
-                values.push(x)
-            })
+                let x = this.props.categories.findIndex(obj => obj.id != item.id);
+                values.push(x);
+            });
         }
         if (this.props.navigation.state.params) {
-            console.log(this.props.navigation.state.params.data)
+            console.log(this.props.navigation.state.params.data);
             this.getdata();
-            console.log(this.state.sportValues)
+            console.log(this.state.sportValues);
         }
 
     }
     getdata = () => {
-        const { name, lat, lng, sports, level, total_participants, start_date, end_date, start_time, end_time, gender, age_range, image, cost, recurrence, user_type, location } = this.props.navigation.state.params.data
-        console.log(total_participants)
-        if (gender == "male") {
+        const { name, lat, lng, sports, level, total_participants, start_date, end_date, start_time, end_time, gender, age_range, image, cost, recurrence, user_type, location } = this.props.navigation.state.params.data;
+        console.log(total_participants);
+        if (gender == 'male') {
             this.setState({
                 gender: 0,
-            })
-        } else if (gender == "female") {
+            });
+        } else if (gender == 'female') {
             this.setState({
                 gender: 1,
-            })
-        } else if (gender == "Other") {
+            });
+        } else if (gender == 'Other') {
             this.setState({
                 gender: 2,
-            })
+            });
         } else {
             this.setState({
                 gender: 3,
-            })
+            });
         }
-        if (level == "Beginner") {
-            this.state.sports[0].level = 0
-        } else if (level == "Intermediate") {
-            this.state.sports[0].level = 1
-        } else if (level == "Advanced") {
-            this.state.sports[0].level = 2
+        if (level == 'Beginner') {
+            this.state.sports[0].level = 0;
+        } else if (level == 'Intermediate') {
+            this.state.sports[0].level = 1;
+        } else if (level == 'Advanced') {
+            this.state.sports[0].level = 2;
         } else {
-            this.state.sports[0].level = 3
+            this.state.sports[0].level = 3;
         }
         this.setState({
             user_type: user_type,
@@ -139,42 +142,42 @@ export class CreateEvent extends Component {
             location: location,
             low: age_range.split('-')[0],
             high: age_range.split('-')[1],
-        })
-        this.state.sportValues = []
+        });
+        this.state.sportValues = [];
         sports.map(item => {
             for (let i in this.props.categories) {
                 if (this.props.categories[i].id == item.id) {
-                    this.state.sportValues.push(i)
+                    this.state.sportValues.push(i);
                 }
             }
-        })
-        console.log(this.state.sportValues)
+        });
+        console.log(this.state.sportValues);
     }
 
 
 
 
     onSportChange1(index, name, value) {
-        this.state.level = value
+        this.state.level = value;
         this.setState((prevState) => ({
             sports: prevState.sports.map((item, i) => {
                 if (index == i) {
                     return {
                         ...item,
-                        [name]: value
-                    }
+                        [name]: value,
+                    };
                 }
-                return item
-            })
-        }))
+                return item;
+            }),
+        }));
     }
 
     onSportChange(index, name, value) {
-        this.state.sport_id = value
+        this.state.sport_id = value;
     }
     callback = (err, response) => {
         if (err) {
-            alert(response)
+            alert(response);
         } else if (response) {
             //    this.state.show = true
 
@@ -182,7 +185,7 @@ export class CreateEvent extends Component {
         this.setState({ show: true });
     }
     async signup() {
-        const { name, lat, lng, sport_id, level, total_participants, start_date, end_date, start_time, end_time, gender, age_range, image, cost, recurrence, termsCheck, user_type, location } = this.state
+        const { name, lat, lng, sport_id, level, total_participants, start_date, end_date, start_time, end_time, gender, age_range, image, cost, recurrence, termsCheck, user_type, location } = this.state;
 
         if (termsCheck == true) {
 
@@ -214,33 +217,33 @@ export class CreateEvent extends Component {
             // }
             if (!name || !total_participants || !start_date || !end_date || !start_time || !end_time || !age_range || !location) {
                 if (!name) {
-                    alert('Please fill event name field')
+                    alert('Please fill event name field');
                 }
                 else if (!total_participants) {
-                    alert('Please fill number of participants')
+                    alert('Please fill number of participants');
                 }
                 else if (!start_date) {
-                    alert('Please fill start_date field')
+                    alert('Please fill start_date field');
                 }
                 else if (!end_date) {
-                    alert('Please fill end_date field')
+                    alert('Please fill end_date field');
                 }
                 else if (!start_time) {
-                    alert('Please fill start_time field')
+                    alert('Please fill start_time field');
                 }
                 else if (!end_time) {
-                    alert('Please fill end_time field')
+                    alert('Please fill end_time field');
                 }
                 else if (!age_range) {
-                    alert('Please select age range')
+                    alert('Please select age range');
                 }
                 else if (!location) {
-                    alert('Please fill address field')
+                    alert('Please fill address field');
                 }
                 // alert(strings.fillFields)
             }
             else if (!Validations.isMinLength(total_participants, 1)) {
-                alert(strings.validInput)
+                alert(strings.validInput);
             }
             else {
 
@@ -259,39 +262,39 @@ export class CreateEvent extends Component {
                     gender: gender,
                     age_range: age_range,
                     image: image,
-                    cost: parseInt(cost),
+                    cost: parseInt(cost, 10),
                     recurrence: recurrence,
-                    location: location
-                }
-                console.log(pars)
-                this.props.createEvent(pars, this.props.navigation, this.callback)
+                    location: location,
+                };
+                console.log(pars);
+                this.props.createEvent(pars, this.props.navigation, this.callback);
             }
         }
         else {
-            alert('Please accept Group Creation Policy')
+            alert('Please accept Group Creation Policy');
         }
 
     }
 
     async update() {
-        const { name, lat, lng, sports, level, total_participants, start_date, end_date, start_time, end_time, gender, age_range, image, cost, recurrence, user_type, location, userid, id } = this.props.navigation.state.params.data
-        var gender1
-        var level1
-        if (gender == "male") {
+        const { name, lat, lng, sports, level, total_participants, start_date, end_date, start_time, end_time, gender, age_range, image, cost, recurrence, user_type, location, userid, id } = this.props.navigation.state.params.data;
+        var gender1;
+        var level1;
+        if (gender == 'male') {
             gender1 = 0;
-        } else if (gender == "female") {
+        } else if (gender == 'female') {
             gender1 = 1;
-        } else if (gender == "other") {
+        } else if (gender == 'other') {
             gender1 = 2;
         } else {
             gender1 = 3;
         }
 
-        if (level == "Beginner") {
+        if (level == 'Beginner') {
             level1 = 0;
-        } else if (level == "Intermediate") {
+        } else if (level == 'Intermediate') {
             level1 = 1;
-        } else if (level == "Advanced") {
+        } else if (level == 'Advanced') {
             level1 = 2;
         } else {
             level1 = 3;
@@ -316,23 +319,23 @@ export class CreateEvent extends Component {
                 recurrence: this.state.recurrence,
                 location: location,
                 userid: userid,
-                id: id
-            }
-            console.log(pars)
-            this.props.updateEvent(pars, this.props.navigation)
+                id: id,
+            };
+            console.log(pars);
+            this.props.updateEvent(pars, this.props.navigation);
         }
         else {
-            alert('Please accept Group Creation Policy')
+            alert('Please accept Group Creation Policy');
         }
 
     }
 
 
     render() {
-        const { gender, sports, sportValues, termsCheck } = this.state
-        const { categories } = this.props
+        const { gender, sports, sportValues, termsCheck } = this.state;
+        const { categories } = this.props;
         if (categories.length > 0) {
-            this.setState.slected_sport = categories[0].name
+            this.setState.slected_sport = categories[0].name;
         }
 
         return (
@@ -367,8 +370,8 @@ export class CreateEvent extends Component {
                         <Input
                             value={this.state.name}
                             fnc={(name) => this.setState({ name })}
-                            prefix=''
-                            label=''
+                            prefix=""
+                            label=""
                             edit={this.props.navigation.state.params ? false : true}
                         />
 
@@ -386,21 +389,18 @@ export class CreateEvent extends Component {
                             value={this.state.location}
                             fnc={(location) => this.setState({ location })}
                             fnc1={(loc) => {
-                                this.setState({ location: loc.description })
-                            }}
-                            fnc1={(loc) => {
-                                this.setState({ location: loc.description })
+                                this.setState({ location: loc.description });
                             }}
                             label={strings.location}
-                            prefix=''
+                            prefix=""
                             comp
-                            showLabel=''
+                            showLabel=""
                             multiline
                             location
                             loc
                             edit={this.props.navigation.state.params ? false : true}
                             getLocation={(location, city, country, zip, lat, lng) => {
-                                let i = countryList.findIndex(obj => obj.name == country)
+                                let i = countryList.findIndex(obj => obj.name == country);
 
                                 this.setState({
                                     location,
@@ -408,12 +408,12 @@ export class CreateEvent extends Component {
                                     zip,
                                     country: i != -1 ? i : 0,
                                     lat,
-                                    lng
-                                })
+                                    lng,
+                                });
 
                             }}
                             getLocation1={(location, city, country, zip, lat, lng) => {
-                                let i = countryList.findIndex(obj => obj.name == country)
+                                let i = countryList.findIndex(obj => obj.name == country);
 
                                 this.setState({
                                     location,
@@ -421,8 +421,8 @@ export class CreateEvent extends Component {
                                     zip,
                                     country: i != -1 ? i : 0,
                                     lat,
-                                    lng
-                                })
+                                    lng,
+                                });
                             }}
                         />
 
@@ -438,12 +438,12 @@ export class CreateEvent extends Component {
                                             <Picker
                                                 list={categories}
                                                 fnc={(sport) => {
-                                                    let arr = sportValues
-                                                    arr[index] = sport
-                                                    this.setState({ sportValues: [] })
-                                                    this.setState({ sportValues: arr })
+                                                    let arr = sportValues;
+                                                    arr[index] = sport;
+                                                    this.setState({ sportValues: [] });
+                                                    this.setState({ sportValues: arr });
 
-                                                    this.onSportChange(index, 'id', categories[sport].id)
+                                                    this.onSportChange(index, 'id', categories[sport].id);
                                                 }}
                                                 value={sportValues[index]}
                                                 placeholder={strings.sports}
@@ -461,7 +461,7 @@ export class CreateEvent extends Component {
                                                 disabled={this.props.navigation.state.params ? true : false}
                                             />
                                         </View>
-                                    )
+                                    );
                                 })
                             }
                         </View>
@@ -470,40 +470,40 @@ export class CreateEvent extends Component {
                         <Input
                             value={this.state.total_participants}
                             fnc={(total_participants) => this.setState({ total_participants })}
-                            prefix=''
-                            label=''
+                            prefix=""
+                            label=""
                             num={true}
                             edit={this.props.navigation.state.params ? false : true}
                         />
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                            <View style={{ width: '45%', }}>
+                            <View style={{ width: '45%' }}>
                                 <Text style={Styles.label} >START DATE</Text>
                                 <DatePick
                                     value={this.state.start_date}
                                     onSelect={(start_date) => {
-                                        this.setState({ start_date: start_date })
+                                        this.setState({ start_date: start_date });
                                     }}
                                     ref={refs => this.start_datePicker = refs}
-                                    label=''
+                                    label=""
                                     min={new Date()}
                                 />
-                                  </View>
-                            <View style={{ width: '45%', }}>
+                            </View>
+                            <View style={{ width: '45%' }}>
                                 <Text style={Styles.label} >END DATE</Text>
                                 <DatePick
                                     value={this.state.end_date}
                                     onSelect={(end_date) => {
-                                        this.setState({ end_date: end_date })
+                                        this.setState({ end_date: end_date });
                                     }}
                                     ref={refs => this.end_datePicker = refs}
-                                    label=''
+                                    label=""
                                     min={new Date()}
                                     customStyles={{
-                                      dateIcon: {
-                                        marginLeft: 0,
-                                        iconColor : 'red'
-                                      },
-                                     
+                                        dateIcon: {
+                                            marginLeft: 0,
+                                            iconColor: 'red',
+                                        },
+
                                     }}
                                 />
                             </View>
@@ -511,25 +511,25 @@ export class CreateEvent extends Component {
 
 
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                            <View style={{ width: '45%', }}>
+                            <View style={{ width: '45%' }}>
                                 <Text style={Styles.label} >START TIME</Text>
                                 <TimePick
                                     value={this.state.start_time}
                                     onSelect={(start_time) => {
-                                        this.setState({ start_time: start_time })
+                                        this.setState({ start_time: start_time });
                                     }}
                                     ref={refs => this.start_timePicker = refs}
-                                    label=''
+                                    label=""
                                     min={new Date()}
                                 />
                             </View>
-                            <View style={{ width: '45%', }}>
+                            <View style={{ width: '45%' }}>
                                 <Text style={Styles.label} >END TIME</Text>
                                 <TimePick
                                     value={this.state.end_time}
                                     onSelect={(end_time) => this.setState({ end_time: end_time })}
                                     ref={refs => this.end_timePicker = refs}
-                                    label=''
+                                    label=""
                                 />
                             </View>
                         </View>
@@ -539,8 +539,8 @@ export class CreateEvent extends Component {
                                     <Text style={{ fontSize: dp(13), color: '#0D3447', fontWeight: '500', marginBottom: dp(10) }} >{strings.recur.toUpperCase()}</Text>
                                     <Picker
                                         fnc={(recurrence) => {
-                                            console.log(recurrence)
-                                            this.setState({ recurrence })
+                                            console.log(recurrence);
+                                            this.setState({ recurrence });
                                         }}
                                         value={this.state.recurrence}
                                         list={this.state.recur}
@@ -559,20 +559,20 @@ export class CreateEvent extends Component {
                             this.state.user_type ?
                                 <View>
                                     <Text style={Styles.label} >{strings.cost_event}</Text>
-                                    <View style={{flexDirection:'row',alignItems:'center',height:40, marginTop:dp(5)}}>
-                                    <Text style={{fontSize:15,marginTop:dp(-7), marginRight:dp(8)}}>$</Text>
-                                    <Input
-                                        value={this.state.cost}
-                                        fnc={(cost) => this.setState({ cost })}
-                                        prefix=''
-                                        label=''
-                                        num
-                                        edit={this.props.navigation.state.params ? false : true}
-                                    />
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', height: 40, marginTop: dp(5) }}>
+                                        <Text style={{ fontSize: 15, marginTop: dp(-7), marginRight: dp(8) }}>$</Text>
+                                        <Input
+                                            value={this.state.cost}
+                                            fnc={(cost) => this.setState({ cost })}
+                                            prefix=""
+                                            label=""
+                                            num
+                                            edit={this.props.navigation.state.params ? false : true}
+                                        />
                                     </View>
                                 </View> : null
 
-               
+
 
                         }
 
@@ -587,29 +587,33 @@ export class CreateEvent extends Component {
                                 disabled={this.props.navigation.state.params ? true : false}
                             />
                         </View>
-                        <View style={{marginTop: dp(5)}}>
-                            <Text style={[Styles.label, {top:20, fontWeight:'bold'}]} >{strings.range}</Text>
-                            <RangeSlider
-                                style={{ width: '90%', height: 60, }}
-                                gravity={'top'}
-                                min={18}
-                                max={100}
-                                step={1}
-                                selectionColor="#114D54"
-                                blankColor="#D8D8D8"
-                                labelTextColor="#ffffff"
-                                labelBackgroundColor="#114D54"
-                                labelBorderColor="#114D54"
-                                onValueChanged={(low, high, fromUser) => {
-                                    this.setState({ low: low })
-                                    this.setState({ high: high })
-                                    this.state.age_range = low + '-' + high
-                                }}
-                                disabled={this.props.navigation.state.params ? true : false} />
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '90%' }}>
-                                <Text style={{ color: '#0D3447', }}>{this.state.low}</Text>
-                                <Text style={{ color: '#0D3447', }}>{this.state.high}</Text>
+                        <View style={{ marginTop: dp(5) }}>
+                            <Text style={[Styles.label, { top: 20, fontWeight: 'bold' }]} >{strings.range}</Text>
+                            <View style={{ width: '100%', alignItems: 'flex-end' }}>
+                                <RangeSlider
+                                    style={{ width: '95%', height: 60 }}
+                                    gravity={'top'}
+                                    min={18}
+                                    max={100}
+                                    step={1}
+                                    selectionColor="#114D54"
+                                    blankColor="#D8D8D8"
+                                    labelTextColor="#ffffff"
+                                    labelBackgroundColor="#114D54"
+                                    labelBorderColor="#114D54"
+                                    onValueChanged={(low, high, fromUser) => {
+                                        this.setState({ low: low });
+                                        this.setState({ high: high });
+                                        this.setState({ age_range: low + '-' + high });
+                                    }}
+                                    disabled={this.props.navigation.state.params ? true : false} />
+
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '95%' }}>
+                                    <Text style={{ color: '#0D3447' }}>{this.state.low}</Text>
+                                    <Text style={{ color: '#0D3447' }}>{this.state.high}</Text>
+                                </View>
                             </View>
+
                         </View>
 
                         <View style={Styles.termsView}>
@@ -640,8 +644,8 @@ export class CreateEvent extends Component {
                     onSelectImage={(image) => {
                         this.setState({
                             picChange: true,
-                            image: image.toString()
-                        })
+                            image: image.toString(),
+                        });
                     }}
                 />
                 <Loader show={this.props.loading} />
@@ -651,11 +655,11 @@ export class CreateEvent extends Component {
                     visible={this.state.show}
                     transparent={true}
                     animated
-                    animationType='fade'
+                    animationType="fade"
                 >
                     <TouchableOpacity style={{ height: '100%', widht: '90%', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' }} activeOpacity={1} onPressOut={() => {
-                        this.setState({ show: false })
-                        this.props.navigation.goBack()
+                        this.setState({ show: false });
+                        this.props.navigation.goBack();
                     }}
                     >
                         <View style={{ borderWidth: 0.1, borderBottomLeftRadius: 5, borderBottomRightRadius: 5, width: '90%', alignItems: 'center' }}>
@@ -665,7 +669,7 @@ export class CreateEvent extends Component {
                                 alignSelf: 'center',
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                paddingVertical: dp(15)
+                                paddingVertical: dp(15),
                             }} >
                                 <Text style={{ fontWeight: '700', fontSize: dp(14), color: 'white' }}>CONFIRMATION</Text>
 
@@ -681,7 +685,7 @@ for the admin’s approval.</Text>
                 </Modal>
 
             </Header>
-        )
+        );
     }
 }
 
@@ -689,20 +693,20 @@ const mapStateToProps = (state) => ({
     userProfile: state.profileReducer.userProfile,
     categories: state.resourcesReducer.categories,
     loading: state.profileReducer.loading,
-})
+});
 
 const mapDispatchToProps = (dispatch) => ({
     createEvent: (pars, navigation, cb) => dispatch({
         type: types.CREATE_EVENT_START,
         params: pars,
         navigation: navigation,
-        callback: cb
+        callback: cb,
     }),
-    updateEvent: (pars, navigation, ) => dispatch({
+    updateEvent: (pars, navigation,) => dispatch({
         type: types.UPDATE_EVENT_START,
         params: pars,
         navigation: navigation,
-    })
-})
+    }),
+});
 
-export default connect(mapStateToProps, mapDispatchToProps)(CreateEvent)
+export default connect(mapStateToProps, mapDispatchToProps)(CreateEvent);

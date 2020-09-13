@@ -1,19 +1,16 @@
+/* eslint-disable prettier/prettier */
 import React from 'react';
-import {
-  ActivityIndicator,
-  StatusBar,
-  View,
-} from 'react-native';
+import { ActivityIndicator, StatusBar, View } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import { connect } from 'react-redux'
+import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import types from '../../types';
 // import {setUser} from '../../actions/auth_action'
-import {creatUser} from '../../Firestore/UsersCollection'
+import { creatUser } from '../../Firestore/UsersCollection';
 
 class AuthLoadingScreen extends React.Component {
-  constructor (props){
-    super(props)
+  constructor(props) {
+    super(props);
     this._bootstrapAsync();
   }
   UNSAFE_componentWillMount() {
@@ -23,23 +20,20 @@ class AuthLoadingScreen extends React.Component {
   // Fetch the token from storage then navigate to our appropriate place
   _bootstrapAsync = async () => {
     const user = await AsyncStorage.getItem('userId');
-    console.log(user)
-    this.props.setUser(user? true : false)
-    if(user){
-      creatUser(user)
+    console.log(user);
+    this.props.setUser(user ? true : false);
+    if (user) {
+      creatUser(user);
       const role = await AsyncStorage.getItem('role');
-      console.log(role)
-      if(role == 1){
+      console.log(role);
+      if (role == 1) {
         this.props.navigation.navigate('App1');
-      }
-      else{
+      } else {
         this.props.navigation.navigate('App');
       }
-    }
-    else{
+    } else {
       this.props.navigation.navigate('Auth');
     }
-    
   };
 
   // Render any loading content that you like here
@@ -53,18 +47,21 @@ class AuthLoadingScreen extends React.Component {
   }
 }
 
-const mapStateToProps = (state) => ({
-})
+const mapStateToProps = state => ({});
 
-const mapDispatchToProps = (dispatch) => ({
-    setUser: (data) => dispatch({
+const mapDispatchToProps = dispatch => ({
+  setUser: data =>
+    dispatch({
       type: types.SET_USER,
-      data: data
+      data: data,
     }),
-    getmyEvent: () => dispatch({
-      type: types.GET_MYEVENYTS 
-  })
-})
+  getmyEvent: () =>
+    dispatch({
+      type: types.GET_MYEVENYTS,
+    }),
+});
 
-
-export default connect(mapStateToProps, mapDispatchToProps)(AuthLoadingScreen)
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(AuthLoadingScreen);

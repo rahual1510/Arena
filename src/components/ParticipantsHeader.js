@@ -7,9 +7,8 @@ import commonStyles from '../util/commonStyles';
 import LinearGradient from 'react-native-linear-gradient';
 import NavigationService from '../NavigationService';
 
-const dp = (size) => EStyleSheet.value(size + 'rem');
 
-class Header extends Component {
+class ParticipantsHeader extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -46,13 +45,11 @@ class Header extends Component {
                         <Text style={styles.title} >{title}</Text>
 
                         {/* <TouchableOpacity onPress={() => NavigationService.navigate('Mapview')}> */}
-                        {!donshowmap && <TouchableOpacity onPress={mapPress}>
-                            <Image source={Images.mapIcon} />
-                        </TouchableOpacity>}
 
-                        {showMessageIcon && <TouchableOpacity onPress={mapPress}>
+
+                        <TouchableOpacity onPress={mapPress}>
                             <Image source={Images.chat} />
-                        </TouchableOpacity>}
+                        </TouchableOpacity>
                     </View>
                 </LinearGradient>
                 {comp ? comp : null}
@@ -111,4 +108,4 @@ const styles = EStyleSheet.create({
     },
 });
 
-export default Header;
+export default ParticipantsHeader;

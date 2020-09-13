@@ -1,17 +1,17 @@
+/* eslint-disable prettier/prettier */
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-community/async-storage';
 
-export const creatUser = (id) => {
-    console.log("create user fires", id)
+export const creatUser = id => {
+    // console.log('create user fires', id);
     firestore()
         .collection('Users')
         .doc(id)
         .get()
         .then(documentSnapshot => {
             if (documentSnapshot.exists) {
-                console.log('User data: ', documentSnapshot.data());
-            }
-            else {
+                // console.log('User data: ', documentSnapshot.data());
+            } else {
                 firestore()
                     .collection('Users')
                     .doc(id)
@@ -24,7 +24,7 @@ export const creatUser = (id) => {
                     });
             }
         });
-}
+};
 
 export const setOffline = async () => {
     const user = await AsyncStorage.getItem('userId');
@@ -39,10 +39,10 @@ export const setOffline = async () => {
                 console.log('User updated on firestore!');
             });
     }
-}
+};
 
-export const getUserData = async (id) => {
-    let userData = {}
+export const getUserData = async id => {
+    let userData = {};
     await firestore()
         .collection('Users')
         .doc(id)
@@ -51,9 +51,9 @@ export const getUserData = async (id) => {
             if (documentSnapshot.exists) {
                 userData = {
                     id: documentSnapshot.id,
-                    data: documentSnapshot.data()
-                }
+                    data: documentSnapshot.data(),
+                };
             }
         });
-    return userData
-}
+    return userData;
+};

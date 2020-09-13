@@ -1,7 +1,10 @@
-import React, { Component } from 'react'
-import { View, Text, Image } from 'react-native'
-import { connect } from 'react-redux'
-import Header from '../../components/Header'
+/* eslint-disable react-native/no-inline-styles */
+/* eslint-disable no-undef */
+/* eslint-disable prettier/prettier */
+import React, { Component } from 'react';
+import { View, Text, Image } from 'react-native';
+import { connect } from 'react-redux';
+import Header from '../../components/Header';
 import strings from '../../util/strings';
 import Styles from './HomeStyle';
 import Images from '../../util/images';
@@ -9,110 +12,85 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import Geolocation from '@react-native-community/geolocation';
 import Loader from '../../components/Loader';
 import types from '../../types';
+import LinearGradient from 'react-native-linear-gradient';
+
 export class OrdinaryHome extends Component {
 
     constructor(props) {
-        super(props)
+        super(props);
         this.state = {
             lat: '',
-            lng: ''
-        }
+            lng: '',
+        };
 
     }
     componentDidMount() {
         Geolocation.getCurrentPosition(info => {
-            console.log(info)
-            this.state.lat = info.coords.latitude
-            this.state.lng = info.coords.longitude
+            console.log(info);
+            this.setState({ lat: info.coords.latitude, lng: info.coords.longitude });
+            if (info.coords.latitude && info.coords.latitude) {
+                var pars = {
+                    lat: info.coords.latitude,
+                    lng: info.coords.latitude,
+                    userid: this.props.userProfile.userid,
+                };
+            }
+            if (pars.lat) {
+                this.props.viewathelete(pars);
+            }
         });
-        console.log(this.props.allEvents)
+        // console.log(this.props.allEvents);
+
     }
 
     render() {
         return (
-            <Header title={'HOME'} search>
+            <Header title={'HOME'} mapPress={() => this.props.navigation.navigate('Mapview', { events: this.props.allEvents })
+            }>
                 <View style={Styles.maincontainer}>
                     <View style={Styles.container}>
 
                         <Text style={Styles.heading}>{strings.explore}</Text>
 
                         <View style={Styles.picsView}>
-                            <View style={Styles.innerPicView}>
+                            <LinearGradient colors={['#0E3648', '#397471', '#63B199']} style={Styles.innerPicView}>
 
-                                <TouchableOpacity onPress={() => {
-                                    if (this.state.lat && this.state.lng) {
-                                        var pars = {
-                                            lat: this.state.lat,
-                                            lng: this.state.lng,
-                                            userid: this.props.userProfile.userid
-                                        }
-                                    }
-                                    if (pars.lat) {
-                                        this.props.viewathelete(pars)
-                                    }
-                                    else{
-                                        Geolocation.getCurrentPosition(info => {
-                                            console.log(info)
-                                            this.state.lat = info.coords.latitude
-                                            this.state.lng = info.coords.longitude
-                                        });
-                                    }
-                                }
-                                } >
-                                    <Image source={Images.tile1} />
+                                <TouchableOpacity onPress={() => this.props.navigation.navigate('FindEvent', { athleteList: this.props.athleteList })} >
+                                    <Text style={Styles.textView} >{strings.find} </Text>
                                 </TouchableOpacity>
 
-                                <Text style={Styles.textView} onPress={() => {
-                                    if (this.state.lat && this.state.lng) {
-                                        var pars = {
-                                            lat: this.state.lat,
-                                            lng: this.state.lng,
-                                            userid: this.props.userProfile.userid
-                                        }
-                                        console.log("params for athelte>>",pars)
-                                    }
-                                    if (pars.lat) {
-                                        this.props.viewathelete(pars)
-                                    }
-                                }
-                                }>{strings.find} </Text>
-                            </View>
-                            <View style={Styles.innerPicView}>
-                                <TouchableOpacity onPress={() => {
-                                    this.props.navigation.navigate('ViewEvents')
-                                }
-                                } >
-                                    <Image source={Images.tile2} />
-                                </TouchableOpacity>
-                                <Text style={Styles.textView} onPress={() => {
-                                    this.props.navigation.navigate('ViewEvents')
-                                }
-                                }>{strings.view} </Text>
-                            </View>
-                            <View style={Styles.innerPicView}>
-                                <TouchableOpacity onPress={() => this.props.navigation.navigate('CreateEvent')} >
-                                    <Image source={Images.tile3} />
-                                </TouchableOpacity>
-                                <Text style={Styles.textView} onPress={() => this.props.navigation.navigate('CreateEvent')}>{strings.create}  </Text>
-                            </View>
+                            </LinearGradient>
+                            <LinearGradient colors={['#0E3648', '#397471', '#63B199']} style={Styles.innerPicView}>
 
+                                <TouchableOpacity onPress={() => this.props.navigation.navigate('ViewEvents')} >
+                                    <Text style={Styles.textView} >{strings.view} </Text>
+                                </TouchableOpacity>
+
+                            </LinearGradient>
+                            <LinearGradient colors={['#0E3648', '#397471', '#63B199']} style={Styles.innerPicView}>
+
+                                <TouchableOpacity onPress={() => this.props.navigation.navigate('CreateEvent')}>
+                                    <Text style={Styles.textView} >{strings.create}  </Text>
+                                </TouchableOpacity>
+
+                            </LinearGradient>
                         </View>
 
-                        <View style={Styles.lineView}></View>
-                        <View style={{flexDirection:'row',width:'98%', padding : dp(5),justifyContent:'space-between'}}>
-                        <Text style={Styles.boldTheme}>MY FAVORITE SPORTS</Text>
-                        {
-                            this.props.userProfile.sports?
-                            <TouchableOpacity onPress={() => {
-                                this.props.navigation.navigate('EditProfile',{
-                                  page : true
-                                })
-                              }}
-                              >
-                              <Image style={{ marginTop: dp(10) }} source={Images.edit} /> 
-                              </TouchableOpacity>: null
-                        }
-                     
+                        <View style={Styles.lineView} />
+                        <View style={{ flexDirection: 'row', width: '98%', padding: dp(5), justifyContent: 'space-between' }}>
+                            <Text style={Styles.boldTheme}>MY FAVORITE SPORTS</Text>
+                            {
+                                this.props.userProfile.sports ?
+                                    <TouchableOpacity onPress={() => {
+                                        this.props.navigation.navigate('EditProfile', {
+                                            page: true,
+                                        });
+                                    }}
+                                    >
+                                        <Image style={{ marginTop: dp(10) }} source={Images.edit} />
+                                    </TouchableOpacity> : null
+                            }
+
                         </View>
                         {
                             this.props.userProfile.sports ?
@@ -122,7 +100,7 @@ export class OrdinaryHome extends Component {
                                             width: '95%', borderWidth: 1, borderRadius: 5, marginBottom: dp(20), height: '14%',
                                             borderColor: index == 0 ? '#B8FCDA' : index == 1 ? '#ACF9E8' : index == 2 ? '#BAE4F8' : index == 3 ? '#DBCEFD' : index == 4 ? '#aaa2bd' : null,
                                             backgroundColor: index == 0 ? '#B8FCDA' : index == 1 ? '#ACF9E8' : index == 2 ? '#BAE4F8' : index == 3 ? '#DBCEFD' : index == 4 ? '#aaa2bd' : null,
-                                            justifyContent: 'center'
+                                            justifyContent: 'center',
                                         }}>
                                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <View style={{ flexDirection: 'row', margin: dp(10) }}>
@@ -134,17 +112,17 @@ export class OrdinaryHome extends Component {
                                                 </View>
 
                                                 <TouchableOpacity onPress={() => {
-                                                    let values = []
+                                                    let values = [];
                                                     if (this.props.allEvents.length > 0) {
                                                         for (let i in this.props.allEvents) {
                                                             if (this.props.allEvents[i].sports[0].name == item.name) {
-                                                                values.push(this.props.allEvents[i])
+                                                                values.push(this.props.allEvents[i]);
                                                             }
                                                         }
                                                     }
                                                     this.props.navigation.navigate('ViewEvents', {
-                                                        events: values
-                                                    })
+                                                        events: values,
+                                                    });
                                                 }} >
                                                     <Image source={Images.rightArrow} />
                                                 </TouchableOpacity>
@@ -154,16 +132,16 @@ export class OrdinaryHome extends Component {
                                     )
                                     :
                                     <View style={Styles.emptyText}>
-                                         <Text style={Styles.emptyTextStyle}> Complete Your Profile</Text>
-                                    <Text onPress={() => this.props.navigation.navigate('EditProfile',{
-                                        page : true
-                                    })} style={Styles.emptyTextStyle1}> Click To Add Your Sports</Text>
+                                        <Text style={Styles.emptyTextStyle}> Complete Your Profile</Text>
+                                        <Text onPress={() => this.props.navigation.navigate('EditProfile', {
+                                            page: true,
+                                        })} style={Styles.emptyTextStyle1}> Click To Add Your Sports</Text>
                                     </View>
                                 :
                                 <View style={Styles.emptyText}>
                                     <Text style={Styles.emptyTextStyle}> Complete Your Profile</Text>
-                                    <Text onPress={() => this.props.navigation.navigate('EditProfile',{
-                                        page : true
+                                    <Text onPress={() => this.props.navigation.navigate('EditProfile', {
+                                        page: true,
                                     })} style={Styles.emptyTextStyle1}> Click To Add Your Sports</Text>
                                 </View>
 
@@ -177,26 +155,27 @@ export class OrdinaryHome extends Component {
 
                 {/* <Loader show={this.props.loading} /> */}
                 {/* <Loader show={this.props.loading1} /> */}
-            </Header>
-        )
+            </Header >
+        );
     }
 }
 
 const mapStateToProps = (state) => ({
+    athleteList: state.profileReducer.athleteList,
     userProfile: state.profileReducer.userProfile,
     loading1: state.profileReducer.loading,
     loading: state.resourcesReducer.loading,
-    allEvents: state.resourcesReducer.allEvents
-})
+    allEvents: state.resourcesReducer.allEvents,
+});
 
 const mapDispatchToProps = (dispatch) => ({
     viewathelete: (pars) => dispatch({
         type: types.FINDATHLETE_START,
-        params: pars
+        params: pars,
     }),
     viewallevent: () => dispatch({
-         type: types.ALLEVENT_START,
-     })
-})
+        type: types.ALLEVENT_START,
+    }),
+});
 
-export default connect(mapStateToProps, mapDispatchToProps)(OrdinaryHome)
+export default connect(mapStateToProps, mapDispatchToProps)(OrdinaryHome);

@@ -21,20 +21,14 @@ import { Api } from '../../APIs/Api';
 import Config from '../../APIs/ApiConfig';
 
 const dp = size => EStyleSheet.value(size + 'rem');
-export class GroupChat extends Component {
+export class Conversation extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      groupChatId: null,
-      messageGroupId: null,
+      eventID: this.props.navigation.getParam('eventID') ? this.props.navigation.getParam('eventID') : null,
       messageText: '',
+      users: this.props.navigation.getParam('users'),
       messages: [],
-      // data: [
-      //   {id:1,  type:'in',   message: "Nadal, can you please let me know the price of that condo?"},
-      //   {id:2,  type:'in',   message: "I am thinking to take it!!"} ,
-      //   {id:3,  type:'out',  message: "Hey Melvin, I need to check That post is quite old."},
-
-      // ],
       Images: [
         {
           id: 1,
@@ -46,54 +40,32 @@ export class GroupChat extends Component {
   }
 
   componentWillMount = async () => {
-    await this.setState({
-      groupChatId:
-        this.props.navigation.getParam('senderPersonId') +
-        '-' +
-        this.props.navigation.getParam('receiverPersonId'),
-    });
     this.getChat();
   };
 
   getChat = async () => {
     firestore()
-      .collection('GroupChat')
-      .doc(String(this.state.groupChatId))
+      .collection('Chat')
+      .doc(String(this.state.eventID))
       .get()
       .then(documentSnapshot => {
         if (documentSnapshot.exists) {
-          this.getMessages(documentSnapshot.data().messageID);
+          this.getMessages(this.state.eventID);
         } else {
           firestore()
-            .collection('GroupChat')
-            .doc(this.state.groupChatId)
+            .collection('Chat')
+            .doc(String(this.state.eventID))
             .set({
-              messageID: this.state.groupChatId,
+              users: this.state.users,
             })
             .then(() => {
-              console.log('User added on firestore!');
-              firestore()
-                .collection('GroupChat')
-                .doc(
-                  this.props.navigation.getParam('receiverPersonId') +
-                  '-' +
-                  this.props.navigation.getParam('senderPersonId'),
-                )
-                .set({
-                  messageID: this.state.groupChatId,
-                })
-                .then(() => {
-                  console.log('User added on firestore!');
-                });
+              console.log('chat added on firestore!');
             });
         }
       });
   };
 
   getMessages = async messageID => {
-    this.setState({
-      messageGroupId: messageID,
-    });
     firestore()
       .collection(String(messageID))
       .onSnapshot(this.onResult, this.onError);
@@ -143,7 +115,7 @@ export class GroupChat extends Component {
       let data = {
         type: type,
         message: type === 'image' ? url : this.state.messageText,
-        senderId: this.props.navigation.getParam('senderPersonId'),
+        senderId: this.props.userProfile.userid,
       };
       if (this.state.messages.length) {
         if (
@@ -154,7 +126,7 @@ export class GroupChat extends Component {
       }
       messages.push(data);
       firestore()
-        .collection(this.state.messageGroupId)
+        .collection(String(this.state.eventID))
         .doc(String(timeStamp))
         .set({
           messages,
@@ -188,7 +160,7 @@ export class GroupChat extends Component {
             this.scrollView.scrollToEnd({ animated: true });
           }}>
           <Header
-            title={'CHAT'}
+            title={this.props.navigation.getParam('eventName', '')}
             search
             back
             goBack={() => this.props.navigation.goBack()}>
@@ -203,15 +175,14 @@ export class GroupChat extends Component {
                         <View style={styles.Line2} />
                       </View>
                       {dates.msg.map(item => {
+                        let otherUser = this.state.users.find(obj => obj.id === item.senderId);
                         return item.senderId ===
-                          this.props.navigation.getParam('senderPersonId') ? (
+                          this.props.userProfile.userid ? (
                             item.type === 'image' ? (
                               <View>
                                 <View style={styles.iImage}>
                                   <Text style={styles.UpNmae}>
-                                    {this.props.navigation.getParam(
-                                      'senderName',
-                                    )}
+                                    {this.props.userProfile.first_name}
                                   </Text>
                                   <Image
                                     source={{ uri: item.message }}
@@ -232,25 +203,21 @@ export class GroupChat extends Component {
                                   <View style={{ marginRight: 7, width: 75 }}>
                                     <View style={styles.imageView2}>
                                       <Image
-                                        source={this.props.navigation.getParam('senderImage') ? { uri: this.props.navigation.getParam('senderImage') } : Images.dummyPic}
+                                        source={this.props.userProfile.image ? { uri: this.props.userProfile.image } : Images.dummyPic}
                                         style={styles.profile}
                                       />
                                     </View>
                                     <Text style={styles.profileNameOut}>
-                                      {this.props.navigation.getParam(
-                                        'senderName',
-                                      )}
+                                      {this.props.userProfile.first_name}
                                     </Text>
                                   </View>
                                 </View>
                               )
                           ) : item.type === 'image' ? (
                             <View>
-                              <View style={styles.iImage}>
-                                <Text style={styles.UpNmae}>
-                                  {this.props.navigation.getParam(
-                                    'receiverName',
-                                  )}
+                              <View style={styles.otherUserImage}>
+                                <Text style={styles.UpOtherNmae}>
+                                  {otherUser.fName + ' ' + otherUser.lName}
                                 </Text>
                                 <Image
                                   source={{ uri: item.message }}
@@ -263,15 +230,11 @@ export class GroupChat extends Component {
                                 <View style={styles.layOut}>
                                   <View style={styles.imageView}>
                                     <Image
-                                      source={this.props.navigation.getParam('recieverImage') ? { uri: this.props.navigation.getParam('recieverImage') } : Images.dummyPic}
+                                      source={otherUser.image ? { uri: otherUser.image } : Images.dummyPic}
                                       style={styles.profile}
                                     />
                                   </View>
-                                  <Text style={styles.profileNameIn}>
-                                    {this.props.navigation.getParam(
-                                      'receiverName',
-                                    )}
-                                  </Text>
+                                  <Text style={styles.profileNameIn}>{otherUser.fName + ' ' + otherUser.lName}</Text>
                                 </View>
                                 <View style={{}}>
                                   <Text style={styles.balloon}>
@@ -285,55 +248,6 @@ export class GroupChat extends Component {
                   );
                 })
                 : null}
-
-              {/* <View style={styles.UpLineView}>
-                <View style={styles.Line} />
-                <Text style={{ fontSize: 12, }}>11-28-2019</Text>
-                <View style={styles.Line2} />
-              </View>
-
-
-              <View style={{ flexDirection: 'row', marginTop: 15 }}>
-                <View style={styles.layOut}>
-                  <View style={styles.imageView}>
-                    <Image source={Images.dummyPic} style={styles.profile} />
-                  </View>
-                  <Text style={styles.profileNameIn}>John Doe</Text>
-                </View>
-                <View style={{}}>
-                  <Text style={styles.balloon}>Nadal, Can you please let me know the price of that condo?</Text>
-                </View>
-              </View>
-
-
-              <View style={{ flexDirection: 'row', alignSelf: 'flex-end', marginTop: 30 }}>
-                <View style={{}}>
-                  <Text style={styles.box}>Hey Melvin, I need to check. That post is quite old.</Text>
-                </View>
-                <View style={{ marginRight: 7, width: 75 }}>
-                  <View style={styles.imageView2}>
-                    <Image source={Images.dummyPic} style={styles.profile} />
-                  </View>
-                  <Text style={styles.profileNameOut}>John Doe</Text>
-                </View>
-              </View>
-
-
-              <View style={styles.LineView}>
-                <View style={styles.Line} />
-                <Text style={{ fontSize: 12, }}>11-29-2019</Text>
-                <View style={styles.Line2} />
-              </View>
-
-
-
-              <View>
-                <View style={styles.iImage}>
-                  <Text style={styles.UpNmae}>John Doe</Text>
-                  <Image source={Images.tile1} style={styles.Images} />
-                </View>
-
-              </View> */}
             </View>
           </Header>
         </ScrollView>
@@ -374,9 +288,7 @@ export class GroupChat extends Component {
   }
 }
 
-const mapStateToProps = state => ({});
 
-const mapDispatchToProps = {};
 const styles = EStyleSheet.create({
   container: {
     height: '100%',
@@ -426,7 +338,11 @@ const styles = EStyleSheet.create({
   UpNmae: {
     alignSelf: 'flex-end',
     fontSize: '12rem',
-    marginRight: '5rem',
+    marginTop: '5rem',
+    marginBottom: '5rem',
+  },
+  UpOtherNmae: {
+    fontSize: '12rem',
     marginTop: '5rem',
     marginBottom: '5rem',
   },
@@ -507,7 +423,7 @@ const styles = EStyleSheet.create({
   },
   Images: {
     height: '140rem',
-    width: '320rem',
+    maxWidth: '240rem',
     borderRadius: '8rem',
   },
   iImage: {
@@ -516,6 +432,11 @@ const styles = EStyleSheet.create({
     marginRight: '20rem',
     alignSelf: 'flex-end',
   },
+  otherUserImage: {
+    maxWidth: 350,
+    marginTop: '-5rem',
+    marginLeft: '20rem',
+  },
   layOut: {
     flexDirection: 'column',
   },
@@ -523,7 +444,13 @@ const styles = EStyleSheet.create({
     marginVertical: '10rem',
   },
 });
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(GroupChat);
+
+const mapStateToProps = (state) => ({
+  userProfile: state.profileReducer.userProfile,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Conversation);

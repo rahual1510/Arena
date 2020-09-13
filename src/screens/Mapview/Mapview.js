@@ -1,77 +1,103 @@
-import React, { Component } from 'react'
-import { View, Text, Image } from 'react-native'
-import { connect } from 'react-redux'
-import Header from '../../components/headerLogo'
+/* eslint-disable react-native/no-inline-styles */
+/* eslint-disable prettier/prettier */
+import React, { Component } from 'react';
+import { View, Text, Image } from 'react-native';
+import { connect } from 'react-redux';
+import Header from '../../components/headerLogo';
 import EStyleSheet from 'react-native-extended-stylesheet';
 import Geolocation from '@react-native-community/geolocation';
 import Images from '../../util/images';
 import Styles from './MapviewStyle';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
-dp = (size) => EStyleSheet.value(size + 'rem')
+import MapEventMarker from '../../components/MapEventMarker';
+
+const dp = (size) => EStyleSheet.value(size + 'rem');
 
 export class Mapview extends Component {
     constructor(props) {
-        super(props)
+        super(props);
         this.state = {
             lat: '',
-            lng: ''
-        }
+            lng: '',
+            atheletList: [],
+            eventList: [],
+        };
+
+    }
+    componentDidMount() {
         Geolocation.getCurrentPosition(info => {
-            console.log(info)
-            this.state.lat = info.coords.latitude
-            this.state.lng = info.coords.longitude
+            this.setState({ lat: info.coords.latitude, lng: info.coords.longitude });
         });
-        console.log(this.props.allEvents)
+        if (this.props.navigation.state.params && this.props.navigation.state.params.events) {
+            this.setState({ eventList: this.props.navigation.state.params.events });
+        }
+
+        if (this.props.navigation.state.params && this.props.navigation.state.params.atheletList) {
+            this.setState({ atheletList: this.props.navigation.state.params.atheletList });
+        }
     }
     render() {
         return (
-            <Header title='MAP VIEW' noLogo={true} filter={true} onPressFilter={() => ''} back onBackPress={() => this.props.navigation.goBack()} search placeholderText={'Search'} fnc={(sval) => this.filter(sval)}  >
+            <Header title="MAP VIEW" noLogo={true} filter={true} onPressFilter={() => ''} back onBackPress={() => this.props.navigation.goBack()} search placeholderText={'Search'} fnc={(sval) => this.filter(sval)}  >
                 <View style={Styles.maincontainer}>
                     <MapView
                         provider={PROVIDER_GOOGLE} // remove if not using Google Maps
                         style={{
                             height: '100%',
                             width: '100%',
-                            borderRadius: 20
-                        }} 
+                            borderRadius: 20,
+                        }}
+                        initialRegion={{
+                            latitude: this.state.lat != '' ? this.state.lat : 28.7040592,
+                            longitude: this.state.lng != '' ? this.state.lng : 77.10249019999999,
+                            latitudeDelta: 0.004,
+                            longitudeDelta: 0.004,
+                        }}
                         region={{
-                            latitude: 28.7040592,
-                            longitude: 77.10249019999999,
-                            latitudeDelta: 0.5,
-                            longitudeDelta: 0.5,
+                            latitude: this.state.lat != '' ? this.state.lat : 28.7040592,
+                            longitude: this.state.lng != '' ? this.state.lng : 77.10249019999999,
+                            latitudeDelta: 0.004,
+                            longitudeDelta: 0.004,
                         }}
                     >
 
-                                        <Marker
-                                        coordinate={{latitude: Number() , longitude: Number()}}
-                                        image={Images.locationicon}
-                                        // tracksViewChanges={trackChanges}
-                                        // onLayout={(event)=>{
-                                        //     const {x, y, width, height} = event.nativeEvent.layout;
-                                        //     if(height>0) {
-                                        //         trackChanges=false
-                                        //     }
-                                        // }}
-                                        // onPress={()=>this.setState({markerSelected:index})}
-                                    >
-                                    </Marker>
-                                       
+                        <Marker
+                            coordinate={{
+                                latitude: this.state.lat != '' ? this.state.lat : 28.7040592,
+                                longitude: this.state.lng != '' ? this.state.lng : 77.10249019999999,
+                            }}
+                            image={Images.locationicon}
+                        />
+
+
+                        {this.state.eventList.map((event, index) => {
+                            return <Marker
+                                coordinate={{ latitude: JSON.parse(event.lat), longitude: JSON.parse(event.lng) }}
+                            >
+                                <Image style={{ backgroundColor: event.user_type == 1 ? '#F18B00' : '#0D3447', width: 20, height: 20, borderRadius: 10 }} />
+                                <MapView.Callout tooltip>
+                                    <MapEventMarker sportdata={event} />
+                                </MapView.Callout>
+
+                            </Marker>;
+                        })}
+
 
                     </MapView>
                 </View>
             </Header>
-        )
+        );
     }
 
 }
 
 const mapStateToProps = (state) => ({
-    allEvents: state.resourcesReducer.allEvents
-})
+    allEvents: state.resourcesReducer.allEvents,
+});
 
 const mapDispatchToProps = {
 
-}
+};
 
-export default connect(mapStateToProps, mapDispatchToProps)(Mapview)
+export default connect(mapStateToProps, mapDispatchToProps)(Mapview);
