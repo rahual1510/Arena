@@ -1,14 +1,13 @@
+/* eslint-disable prettier/prettier */
 import React, { Component } from 'react';
 import messaging from '@react-native-firebase/messaging';
 import AsyncStorage from '@react-native-community/async-storage';
 
 export default class PushNotification extends Component {
-    constructor(props) {
-        super(props)
-    }
+
 
     componentDidMount() {
-        this.checkPermission()
+        this.checkPermission();
 
         messaging().onNotificationOpenedApp(remoteMessage => {
             console.log(
@@ -59,6 +58,6 @@ export default class PushNotification extends Component {
     }
 
     render() {
-        return null
+        return null;
     }
 }

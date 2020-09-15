@@ -9,7 +9,6 @@ import commonStyles from '../../util/commonStyles';
 import strings from '../../util/strings';
 import Styles from './ViewEventsStyle';
 import Sports from '../../components/Sports';
-import MapEventMarker from '../../components/MapEventMarker';
 const dp = size => EStyleSheet.value(size + 'rem');
 
 export class ViewEvents extends Component {

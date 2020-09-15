@@ -51,14 +51,14 @@ export class Mapview extends Component {
                         initialRegion={{
                             latitude: this.state.lat != '' ? this.state.lat : 28.7040592,
                             longitude: this.state.lng != '' ? this.state.lng : 77.10249019999999,
-                            latitudeDelta: 0.004,
-                            longitudeDelta: 0.004,
+                            latitudeDelta: 0.1,
+                            longitudeDelta: 0.1,
                         }}
                         region={{
                             latitude: this.state.lat != '' ? this.state.lat : 28.7040592,
                             longitude: this.state.lng != '' ? this.state.lng : 77.10249019999999,
-                            latitudeDelta: 0.004,
-                            longitudeDelta: 0.004,
+                            latitudeDelta: 0.1,
+                            longitudeDelta: 0.1,
                         }}
                     >
 
@@ -76,7 +76,10 @@ export class Mapview extends Component {
                                 coordinate={{ latitude: JSON.parse(event.lat), longitude: JSON.parse(event.lng) }}
                             >
                                 <Image style={{ backgroundColor: event.user_type == 1 ? '#F18B00' : '#0D3447', width: 20, height: 20, borderRadius: 10 }} />
-                                <MapView.Callout tooltip>
+                                <MapView.Callout tooltip onPress={() => this.props.navigation.navigate('EventDetail', {
+                                    evendetail: event,
+                                    interest: 'interest',
+                                })}>
                                     <MapEventMarker sportdata={event} />
                                 </MapView.Callout>
 

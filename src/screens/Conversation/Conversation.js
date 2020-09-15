@@ -7,7 +7,7 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
-  TextInput,
+  TextInput, KeyboardAvoidingView
 } from 'react-native';
 import { connect } from 'react-redux';
 import Header from '../../components/Header';
@@ -152,7 +152,7 @@ export class Conversation extends Component {
 
   render() {
     return (
-      <View style={styles.container}>
+      <KeyboardAvoidingView style={styles.container}>
         <ScrollView
           ref={ref => (this.scrollView = ref)}
           style={{ flex: 1 }}
@@ -283,7 +283,7 @@ export class Conversation extends Component {
             <Image source={Images.SendIcon} style={styles.iconSend} />
           </TouchableOpacity>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     );
   }
 }
@@ -398,6 +398,7 @@ const styles = EStyleSheet.create({
     height: '100%',
     marginLeft: '16rem',
     fontSize: '12rem',
+    width: '100%',
     borderBottomColor: '#FFFFFF',
   },
   balloon: {
