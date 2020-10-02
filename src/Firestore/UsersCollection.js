@@ -2,8 +2,9 @@
 import firestore from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-community/async-storage';
 
-export const creatUser = id => {
+export const creatUser = async (id) => {
     // console.log('create user fires', id);
+    const fcmToken = await AsyncStorage.getItem('fcmToken');
     firestore()
         .collection('Users')
         .doc(id)
@@ -18,6 +19,7 @@ export const creatUser = id => {
                     .set({
                         name: id,
                         active: true,
+                        fbToken: fcmToken
                     })
                     .then(() => {
                         console.log('User added on firestore!');

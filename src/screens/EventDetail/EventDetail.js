@@ -120,7 +120,7 @@ export class EventDetail extends Component {
                         </Text>
 
                         <Text style={Styles.boldTheme}>
-                            0/{this.state.event.total_participants} Participants needed
+                            {this.state.event.total_participants} Participants needed
             </Text>
 
                         <View style={Styles.commonSpace}>

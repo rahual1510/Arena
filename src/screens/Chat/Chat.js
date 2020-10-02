@@ -7,8 +7,10 @@ import Category from './Category';
 import AsyncStorage from '@react-native-community/async-storage';
 import firestore from '@react-native-firebase/firestore';
 import { getUserData } from '../../Firestore/UsersCollection';
+import { connect } from 'react-redux';
 
 export class Chat extends Component {
+
     constructor(props) {
         super(props);
         this.state = {
@@ -35,41 +37,58 @@ export class Chat extends Component {
                 .collection('Users')
                 .onSnapshot(this.onResult, this.onError);
         }
-    };
+    }; 
+
+    getMessages = async messageID => {
+        this.setState({
+          messageGroupId: messageID,
+        });
+        firestore().collection('messages')
+          .doc(messageID)
+          .collection('messages')
+          .onSnapshot(this.onResult, this.onError);
+      };
 
     chatAccounts = async () => {
-        let chatUsersId = [];
+        let chatDetails = [];
         await firestore()
-            .collection('GroupChat')
+            .collection('chat')
             .get()
             .then(querySnapshot => {
                 querySnapshot.forEach(documentSnapshot => {
                     let data = documentSnapshot.id.split('-');
                     if (data[0] === this.state.currentUserId) {
-                        chatUsersId.push(data[1]);
+                        chatDetails.push({
+                            userID: data[1],
+                            chatData: documentSnapshot.data()
+                        });
                     }
                 });
             });
-        this.getUserData(chatUsersId);
+        this.getUserData(chatDetails);
     };
 
-    getUserData = async data => {
+    getUserData = async chatDetails => {
         let users = [];
         await firestore()
             .collection('Users')
             .get()
             .then(querySnapshot => {
                 querySnapshot.forEach(documentSnapshot => {
-                    if (data.includes(documentSnapshot.id)) {
-                        let userData = {
-                            id: documentSnapshot.id,
-                            data: documentSnapshot.data(),
-                        };
-                        users.push(userData);
-                    }
+                    chatDetails.forEach(chat => {
+                        if (chat.userID == documentSnapshot.id) {
+                            let userData = {
+                                id: documentSnapshot.id,
+                                data: documentSnapshot.data(),
+                                chatData: chat.chatData
+                            };
+                            users.push(userData);
+                        }
+                    })
                 });
             });
         this.setState({ users });
+        console.log(users)
     };
 
     onResult = async QuerySnapshot => {
@@ -104,9 +123,10 @@ export class Chat extends Component {
                                         }}>
                                         <Category
                                             imageUri={user.data.image ? { uri: user.data.image } : Images.tile2}
-                                            onlineStus={user.data.active ? Images.online : ''}
+                                            onlineStus={user.data.active ? Images.online : Images.online}
                                             name={user.data.name}
-                                            message="5 miles away"
+                                            chatData={user.chatData}
+                                            userId={this.props.userProfile.userid}
                                         />
                                     </TouchableOpacity>
                                 );
@@ -119,4 +139,12 @@ export class Chat extends Component {
     }
 }
 
-export default Chat;
+const mapStateToProps = (state) => ({
+    userProfile: state.profileReducer.userProfile,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Chat);

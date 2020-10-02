@@ -13,6 +13,8 @@ import Geolocation from '@react-native-community/geolocation';
 import Loader from '../../components/Loader';
 import types from '../../types';
 import LinearGradient from 'react-native-linear-gradient';
+import firestore from '@react-native-firebase/firestore';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export class OrdinaryHome extends Component {
 
@@ -24,6 +26,20 @@ export class OrdinaryHome extends Component {
         };
 
     }
+    async saveFCMToken() {
+        const fcmToken = await AsyncStorage.getItem('fcmToken');
+
+        firestore()
+            .collection('Users')
+            .doc(String(this.props.userProfile.userid))
+            .update({
+                fbToken: fcmToken
+            })
+            .then(() => {
+                console.log('User updated on firestore!');
+            });
+    }
+
     componentDidMount() {
         Geolocation.getCurrentPosition(info => {
             console.log(info);
@@ -31,7 +47,7 @@ export class OrdinaryHome extends Component {
             if (info.coords.latitude && info.coords.latitude) {
                 var pars = {
                     lat: info.coords.latitude,
-                    lng: info.coords.latitude,
+                    lng: info.coords.longitude,
                     userid: this.props.userProfile.userid,
                 };
             }
@@ -40,7 +56,7 @@ export class OrdinaryHome extends Component {
             }
         });
         // console.log(this.props.allEvents);
-
+        this.saveFCMToken()
     }
 
     render() {
@@ -55,21 +71,21 @@ export class OrdinaryHome extends Component {
                         <View style={Styles.picsView}>
                             <LinearGradient colors={['#0E3648', '#397471', '#63B199']} style={Styles.innerPicView}>
 
-                                <TouchableOpacity onPress={() => this.props.navigation.navigate('FindEvent', { athleteList: this.props.athleteList })} >
+                                <TouchableOpacity style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }} onPress={() => this.props.navigation.navigate('FindEvent', { athleteList: this.props.athleteList })} >
                                     <Text style={Styles.textView} >{strings.find} </Text>
                                 </TouchableOpacity>
 
                             </LinearGradient>
                             <LinearGradient colors={['#0E3648', '#397471', '#63B199']} style={Styles.innerPicView}>
 
-                                <TouchableOpacity onPress={() => this.props.navigation.navigate('ViewEvents')} >
+                                <TouchableOpacity style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }} onPress={() => this.props.navigation.navigate('ViewEvents')} >
                                     <Text style={Styles.textView} >{strings.view} </Text>
                                 </TouchableOpacity>
 
                             </LinearGradient>
                             <LinearGradient colors={['#0E3648', '#397471', '#63B199']} style={Styles.innerPicView}>
 
-                                <TouchableOpacity onPress={() => this.props.navigation.navigate('CreateEvent')}>
+                                <TouchableOpacity style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }} onPress={() => this.props.navigation.navigate('CreateEvent')}>
                                     <Text style={Styles.textView} >{strings.create}  </Text>
                                 </TouchableOpacity>
 

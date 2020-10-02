@@ -307,9 +307,7 @@ class Drawer extends Component {
                         ? null
                         : this.renderTitle('My Events', Images.myEvent, 'OrdinaryEvent')}
                     {this.renderTitle('Awards', Images.award, 'CreateEventView')}
-                    {this.state.pro
-                        ? null
-                        : this.renderTitle('Chat', Images.chat, 'Chat')}
+                    {this.renderTitle('Chat', Images.chat, 'Chat')}
                     {this.renderTitle('Change Password', Images.change, 'GroupChat')}
                     {this.renderTitle('Support', Images.support, 'Chat')}
                     {this.renderTitle('Legal', Images.legal, 'PublicAccepted')}

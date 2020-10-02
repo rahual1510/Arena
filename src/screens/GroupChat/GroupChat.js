@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Keyboard,
   TextInput, KeyboardAvoidingView
 } from 'react-native';
 import { connect } from 'react-redux';
@@ -19,6 +20,8 @@ import firestore from '@react-native-firebase/firestore';
 import moment from 'moment';
 import { Api } from '../../APIs/Api';
 import Config from '../../APIs/ApiConfig';
+import commonStyles from '../../util/commonStyles';
+import LinearGradient from 'react-native-linear-gradient';
 
 export class GroupChat extends Component {
   constructor(props) {
@@ -28,12 +31,6 @@ export class GroupChat extends Component {
       messageGroupId: null,
       messageText: '',
       messages: [],
-      // data: [
-      //   {id:1,  type:'in',   message: "Nadal, can you please let me know the price of that condo?"},
-      //   {id:2,  type:'in',   message: "I am thinking to take it!!"} ,
-      //   {id:3,  type:'out',  message: "Hey Melvin, I need to check That post is quite old."},
-
-      // ],
       Images: [
         {
           id: 1,
@@ -42,6 +39,19 @@ export class GroupChat extends Component {
         },
       ],
     };
+  }
+
+  componentDidMount() {
+    this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow',
+      this._keyboardDidShow.bind(this));
+  }
+
+  componentWillUnmount() {
+    this.keyboardDidShowListener.remove();
+  }
+
+  _keyboardDidShow() {
+    this.scrollView.scrollToEnd({ animated: false })
   }
 
   componentWillMount = async () => {
@@ -56,7 +66,7 @@ export class GroupChat extends Component {
 
   getChat = async () => {
     firestore()
-      .collection('GroupChat')
+      .collection('chat')
       .doc(String(this.state.groupChatId))
       .get()
       .then(documentSnapshot => {
@@ -64,7 +74,7 @@ export class GroupChat extends Component {
           this.getMessages(documentSnapshot.data().messageID);
         } else {
           firestore()
-            .collection('GroupChat')
+            .collection('chat')
             .doc(this.state.groupChatId)
             .set({
               messageID: this.state.groupChatId,
@@ -72,7 +82,7 @@ export class GroupChat extends Component {
             .then(() => {
               console.log('User added on firestore!');
               firestore()
-                .collection('GroupChat')
+                .collection('chat')
                 .doc(
                   this.props.navigation.getParam('receiverPersonId') +
                   '-' +
@@ -93,8 +103,9 @@ export class GroupChat extends Component {
     this.setState({
       messageGroupId: messageID,
     });
-    firestore()
-      .collection(String(messageID))
+    firestore().collection('messages')
+      .doc(messageID)
+      .collection('messages')
       .onSnapshot(this.onResult, this.onError);
   };
 
@@ -143,6 +154,9 @@ export class GroupChat extends Component {
         type: type,
         message: type === 'image' ? url : this.state.messageText,
         senderId: this.props.navigation.getParam('senderPersonId'),
+        recieverId: this.props.navigation.getParam('receiverPersonId'),
+        senderName: this.props.navigation.getParam('senderName'),
+        reciverName: this.props.navigation.getParam('receiverName'),
       };
       if (this.state.messages.length) {
         if (
@@ -153,7 +167,9 @@ export class GroupChat extends Component {
       }
       messages.push(data);
       firestore()
-        .collection(this.state.messageGroupId)
+        .collection('messages')
+        .doc(this.state.messageGroupId)
+        .collection('messages')
         .doc(String(timeStamp))
         .set({
           messages,
@@ -162,7 +178,30 @@ export class GroupChat extends Component {
           this.setState({
             messageText: '',
           });
-          console.log('Messages updated!');
+          firestore()
+            .collection('chat')
+            .doc(this.state.groupChatId)
+            .update({
+              lastMessage: data,
+              seen: true
+            })
+            .then(() => {
+              console.log('User added on firestore!');
+              firestore()
+                .collection('chat')
+                .doc(
+                  this.props.navigation.getParam('receiverPersonId') +
+                  '-' +
+                  this.props.navigation.getParam('senderPersonId'),
+                )
+                .update({
+                  lastMessage: data,
+                  seen: false
+                })
+                .then(() => {
+                  console.log('User added on firestore!');
+                });
+            });
         });
     }
   };
@@ -186,69 +225,38 @@ export class GroupChat extends Component {
           onContentSizeChange={() => {
             this.scrollView.scrollToEnd({ animated: true });
           }}>
-          <Header
-            title={'CHAT'}
-            search
-            back
-            goBack={() => this.props.navigation.goBack()}>
-            <View>
-              {this.state.messages.length
-                ? this.state.messages.map(dates => {
-                  return (
-                    <>
-                      <View style={styles.UpLineView}>
-                        <View style={styles.Line} />
-                        <Text style={{ fontSize: 12 }}>{dates.date}</Text>
-                        <View style={styles.Line2} />
-                      </View>
-                      {dates.msg.map(item => {
-                        return item.senderId ===
-                          this.props.navigation.getParam('senderPersonId') ? (
-                            item.type === 'image' ? (
-                              <View>
-                                <View style={styles.iImage}>
-                                  <Text style={styles.UpNmae}>
-                                    {this.props.navigation.getParam(
-                                      'senderName',
-                                    )}
-                                  </Text>
-                                  <Image
-                                    source={{ uri: item.message }}
-                                    style={styles.Images}
-                                  />
-                                </View>
-                              </View>
-                            ) : (
-                                <View
-                                  style={{
-                                    flexDirection: 'row',
-                                    alignSelf: 'flex-end',
-                                    marginTop: 30,
-                                  }}>
-                                  <View style={{}}>
-                                    <Text style={styles.box}>{item.message}</Text>
-                                  </View>
-                                  <View style={{ marginRight: 7, width: 75 }}>
-                                    <View style={styles.imageView2}>
-                                      <Image
-                                        source={this.props.navigation.getParam('senderImage') ? { uri: this.props.navigation.getParam('senderImage') } : Images.dummyPic}
-                                        style={styles.profile}
-                                      />
-                                    </View>
-                                    <Text style={styles.profileNameOut}>
-                                      {this.props.navigation.getParam(
-                                        'senderName',
-                                      )}
-                                    </Text>
-                                  </View>
-                                </View>
-                              )
-                          ) : item.type === 'image' ? (
+          <LinearGradient colors={['#0E3648', '#397471', '#63B199']} style={[commonStyles.shadow, styles.headerView]} >
+            <View style={styles.titleView} >
+              <TouchableOpacity onPress={() => this.props.navigation.goBack()}
+                hitSlop={{ top: 5, left: 5, bottom: 5, right: 5 }} >
+                <Image source={Images.leftarrow} />
+              </TouchableOpacity>
+
+              <Text style={styles.title} >{'CHAT'}</Text>
+              <TouchableOpacity >
+                <Image source={Images.chat} />
+              </TouchableOpacity>
+            </View>
+          </LinearGradient>
+          <View>
+            {this.state.messages.length
+              ? this.state.messages.map(dates => {
+                return (
+                  <>
+                    <View style={styles.UpLineView}>
+                      <View style={styles.Line} />
+                      <Text style={{ fontSize: 12 }}>{dates.date}</Text>
+                      <View style={styles.Line2} />
+                    </View>
+                    {dates.msg.map(item => {
+                      return item.senderId ===
+                        this.props.navigation.getParam('senderPersonId') ? (
+                          item.type === 'image' ? (
                             <View>
                               <View style={styles.iImage}>
                                 <Text style={styles.UpNmae}>
                                   {this.props.navigation.getParam(
-                                    'receiverName',
+                                    'senderName',
                                   )}
                                 </Text>
                                 <Image
@@ -258,83 +266,72 @@ export class GroupChat extends Component {
                               </View>
                             </View>
                           ) : (
-                              <View style={{ flexDirection: 'row', marginTop: 15 }}>
-                                <View style={styles.layOut}>
-                                  <View style={styles.imageView}>
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  alignSelf: 'flex-end',
+                                  marginTop: 30,
+                                }}>
+                                <View style={{}}>
+                                  <Text style={styles.box}>{item.message}</Text>
+                                </View>
+                                <View style={{ marginRight: 7, alignItems: 'center' }}>
+                                  <View style={styles.imageView2}>
                                     <Image
-                                      source={this.props.navigation.getParam('recieverImage') ? { uri: this.props.navigation.getParam('recieverImage') } : Images.dummyPic}
+                                      source={this.props.navigation.getParam('senderImage') ? { uri: this.props.navigation.getParam('senderImage') } : Images.dummyPic}
                                       style={styles.profile}
                                     />
                                   </View>
-                                  <Text style={styles.profileNameIn}>
+                                  <Text style={styles.profileNameOut}>
                                     {this.props.navigation.getParam(
-                                      'receiverName',
+                                      'senderName',
                                     )}
                                   </Text>
                                 </View>
-                                <View style={{}}>
-                                  <Text style={styles.balloon}>
-                                    {item.message}
-                                  </Text>
-                                </View>
                               </View>
-                            );
-                      })}
-                    </>
-                  );
-                })
-                : null}
-
-              {/* <View style={styles.UpLineView}>
-                <View style={styles.Line} />
-                <Text style={{ fontSize: 12, }}>11-28-2019</Text>
-                <View style={styles.Line2} />
-              </View>
-
-
-              <View style={{ flexDirection: 'row', marginTop: 15 }}>
-                <View style={styles.layOut}>
-                  <View style={styles.imageView}>
-                    <Image source={Images.dummyPic} style={styles.profile} />
-                  </View>
-                  <Text style={styles.profileNameIn}>John Doe</Text>
-                </View>
-                <View style={{}}>
-                  <Text style={styles.balloon}>Nadal, Can you please let me know the price of that condo?</Text>
-                </View>
-              </View>
-
-
-              <View style={{ flexDirection: 'row', alignSelf: 'flex-end', marginTop: 30 }}>
-                <View style={{}}>
-                  <Text style={styles.box}>Hey Melvin, I need to check. That post is quite old.</Text>
-                </View>
-                <View style={{ marginRight: 7, width: 75 }}>
-                  <View style={styles.imageView2}>
-                    <Image source={Images.dummyPic} style={styles.profile} />
-                  </View>
-                  <Text style={styles.profileNameOut}>John Doe</Text>
-                </View>
-              </View>
-
-
-              <View style={styles.LineView}>
-                <View style={styles.Line} />
-                <Text style={{ fontSize: 12, }}>11-29-2019</Text>
-                <View style={styles.Line2} />
-              </View>
-
-
-
-              <View>
-                <View style={styles.iImage}>
-                  <Text style={styles.UpNmae}>John Doe</Text>
-                  <Image source={Images.tile1} style={styles.Images} />
-                </View>
-
-              </View> */}
-            </View>
-          </Header>
+                            )
+                        ) : item.type === 'image' ? (
+                          <View>
+                            <View style={styles.otherUserImage}>
+                              <Text style={styles.UpOtherNmae}>
+                                {this.props.navigation.getParam(
+                                  'receiverName',
+                                )}
+                              </Text>
+                              <Image
+                                source={{ uri: item.message }}
+                                style={styles.Images}
+                              />
+                            </View>
+                          </View>
+                        ) : (
+                            <View style={{ flexDirection: 'row', marginTop: 15 }}>
+                              <View style={styles.layOut}>
+                                <View style={styles.imageView}>
+                                  <Image
+                                    source={this.props.navigation.getParam('recieverImage') ? { uri: this.props.navigation.getParam('recieverImage') } : Images.dummyPic}
+                                    style={styles.profile}
+                                  />
+                                </View>
+                                <Text style={styles.profileNameIn}>
+                                  {this.props.navigation.getParam(
+                                    'receiverName',
+                                  )}
+                                </Text>
+                              </View>
+                              <View style={{}}>
+                                <Text style={styles.balloon}>
+                                  {item.message}
+                                </Text>
+                              </View>
+                            </View>
+                          );
+                    })}
+                  </>
+                );
+              })
+              : null}
+          </View>
         </ScrollView>
 
         <ImagePick
@@ -379,6 +376,25 @@ const mapDispatchToProps = {};
 const styles = EStyleSheet.create({
   container: {
     height: '100%',
+  },
+  title: {
+    fontSize: '14rem',
+    fontWeight: '500',
+    textAlign: 'center',
+    color: '#FFF',
+  },
+  titleView: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: '50rem',
+    paddingHorizontal: '15rem',
+  },
+  headerView: {
+    minHeight: '50rem',
+    marginBottom: 2,
+    shadowOffset: { width: 0, height: 0.5 },
   },
   Line: {
     borderBottomColor: '#63B199',
@@ -425,7 +441,11 @@ const styles = EStyleSheet.create({
   UpNmae: {
     alignSelf: 'flex-end',
     fontSize: '12rem',
-    marginRight: '5rem',
+    marginTop: '5rem',
+    marginBottom: '5rem',
+  },
+  UpOtherNmae: {
+    fontSize: '12rem',
     marginTop: '5rem',
     marginBottom: '5rem',
   },
@@ -446,8 +466,6 @@ const styles = EStyleSheet.create({
     alignSelf: 'center',
     padding: '5rem',
     width: '100%',
-    bottom: 0,
-    position: 'absolute',
   },
   btnSend: {
     width: '40rem',
@@ -507,7 +525,7 @@ const styles = EStyleSheet.create({
   },
   Images: {
     height: '140rem',
-    width: '320rem',
+    maxWidth: '240rem',
     borderRadius: '8rem',
   },
   iImage: {
@@ -515,6 +533,11 @@ const styles = EStyleSheet.create({
     marginTop: '-5rem',
     marginRight: '20rem',
     alignSelf: 'flex-end',
+  },
+  otherUserImage: {
+    maxWidth: 350,
+    marginTop: '-5rem',
+    marginLeft: '20rem',
   },
   layOut: {
     flexDirection: 'column',

@@ -7,7 +7,8 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
-  TextInput, KeyboardAvoidingView
+  Keyboard,
+  TextInput, KeyboardAvoidingView, Button
 } from 'react-native';
 import { connect } from 'react-redux';
 import Header from '../../components/Header';
@@ -19,6 +20,8 @@ import firestore from '@react-native-firebase/firestore';
 import moment from 'moment';
 import { Api } from '../../APIs/Api';
 import Config from '../../APIs/ApiConfig';
+import commonStyles from '../../util/commonStyles';
+import LinearGradient from 'react-native-linear-gradient';
 
 const dp = size => EStyleSheet.value(size + 'rem');
 export class Conversation extends Component {
@@ -27,6 +30,7 @@ export class Conversation extends Component {
     this.state = {
       eventID: this.props.navigation.getParam('eventID') ? this.props.navigation.getParam('eventID') : null,
       messageText: '',
+      isLoading: false,
       users: this.props.navigation.getParam('users'),
       messages: [],
       Images: [
@@ -43,17 +47,32 @@ export class Conversation extends Component {
     this.getChat();
   };
 
+  componentDidMount() {
+    this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow',
+      this._keyboardDidShow.bind(this));
+  }
+
+  componentWillUnmount() {
+    this.keyboardDidShowListener.remove();
+  }
+
+  _keyboardDidShow() {
+    this.scrollView.scrollToEnd({ animated: false })
+  }
+
   getChat = async () => {
+    this.setState({ isLoading: true })
     firestore()
-      .collection('Chat')
+      .collection('groupChat')
       .doc(String(this.state.eventID))
       .get()
       .then(documentSnapshot => {
         if (documentSnapshot.exists) {
           this.getMessages(this.state.eventID);
         } else {
+          this.setState({ isLoading: false })
           firestore()
-            .collection('Chat')
+            .collection('groupChat')
             .doc(String(this.state.eventID))
             .set({
               users: this.state.users,
@@ -67,13 +86,16 @@ export class Conversation extends Component {
 
   getMessages = async messageID => {
     firestore()
-      .collection(String(messageID))
+      .collection('groupChat')
+      .doc(String(this.state.eventID))
+      .collection('messages')
       .onSnapshot(this.onResult, this.onError);
   };
 
   onResult = async QuerySnapshot => {
     let messages = [];
     QuerySnapshot.forEach(documentSnapshot => {
+      this.setState({ isLoading: false })
       let data = {
         date: documentSnapshot.id,
         msg: documentSnapshot.data().messages,
@@ -86,6 +108,7 @@ export class Conversation extends Component {
   };
 
   onError = error => {
+    this.setState({ isLoading: false })
     console.error(error);
   };
 
@@ -126,7 +149,9 @@ export class Conversation extends Component {
       }
       messages.push(data);
       firestore()
-        .collection(String(this.state.eventID))
+        .collection('groupChat')
+        .doc(String(this.state.eventID))
+        .collection('messages')
         .doc(String(timeStamp))
         .set({
           messages,
@@ -135,7 +160,15 @@ export class Conversation extends Component {
           this.setState({
             messageText: '',
           });
-          console.log('Messages updated!');
+          firestore()
+            .collection('groupChat')
+            .doc(String(this.state.eventID))
+            .update({
+              lastMessage: data,
+            })
+            .then(() => {
+              console.log('chat added on firestore!');
+            });
         });
     }
   };
@@ -159,65 +192,38 @@ export class Conversation extends Component {
           onContentSizeChange={() => {
             this.scrollView.scrollToEnd({ animated: true });
           }}>
-          <Header
-            title={this.props.navigation.getParam('eventName', '')}
-            search
-            back
-            goBack={() => this.props.navigation.goBack()}>
-            <View>
-              {this.state.messages.length
-                ? this.state.messages.map(dates => {
-                  return (
-                    <>
-                      <View style={styles.UpLineView}>
-                        <View style={styles.Line} />
-                        <Text style={{ fontSize: 12 }}>{dates.date}</Text>
-                        <View style={styles.Line2} />
-                      </View>
-                      {dates.msg.map(item => {
-                        let otherUser = this.state.users.find(obj => obj.id === item.senderId);
-                        return item.senderId ===
-                          this.props.userProfile.userid ? (
-                            item.type === 'image' ? (
-                              <View>
-                                <View style={styles.iImage}>
-                                  <Text style={styles.UpNmae}>
-                                    {this.props.userProfile.first_name}
-                                  </Text>
-                                  <Image
-                                    source={{ uri: item.message }}
-                                    style={styles.Images}
-                                  />
-                                </View>
-                              </View>
-                            ) : (
-                                <View
-                                  style={{
-                                    flexDirection: 'row',
-                                    alignSelf: 'flex-end',
-                                    marginTop: 30,
-                                  }}>
-                                  <View style={{}}>
-                                    <Text style={styles.box}>{item.message}</Text>
-                                  </View>
-                                  <View style={{ marginRight: 7, width: 75 }}>
-                                    <View style={styles.imageView2}>
-                                      <Image
-                                        source={this.props.userProfile.image ? { uri: this.props.userProfile.image } : Images.dummyPic}
-                                        style={styles.profile}
-                                      />
-                                    </View>
-                                    <Text style={styles.profileNameOut}>
-                                      {this.props.userProfile.first_name}
-                                    </Text>
-                                  </View>
-                                </View>
-                              )
-                          ) : item.type === 'image' ? (
+          <LinearGradient colors={['#0E3648', '#397471', '#63B199']} style={[commonStyles.shadow, styles.headerView]} >
+            <View style={styles.titleView} >
+              <TouchableOpacity onPress={() => this.props.navigation.goBack()}
+                hitSlop={{ top: 5, left: 5, bottom: 5, right: 5 }} >
+                <Image source={Images.leftarrow} />
+              </TouchableOpacity>
+
+              <Text style={styles.title} >{this.props.navigation.getParam('eventName', '')}</Text>
+              <TouchableOpacity >
+                <Image source={Images.chat} />
+              </TouchableOpacity>
+            </View>
+          </LinearGradient>
+          <View>
+            {this.state.messages.length
+              ? this.state.messages.map(dates => {
+                return (
+                  <>
+                    <View style={styles.UpLineView}>
+                      <View style={styles.Line} />
+                      <Text style={{ fontSize: 12 }}>{dates.date}</Text>
+                      <View style={styles.Line2} />
+                    </View>
+                    {dates.msg.map(item => {
+                      let otherUser = this.state.users.find(obj => obj.id === item.senderId);
+                      return item.senderId ===
+                        this.props.userProfile.userid ? (
+                          item.type === 'image' ? (
                             <View>
-                              <View style={styles.otherUserImage}>
-                                <Text style={styles.UpOtherNmae}>
-                                  {otherUser.fName + ' ' + otherUser.lName}
+                              <View style={styles.iImage}>
+                                <Text style={styles.UpNmae}>
+                                  {this.props.userProfile.first_name}
                                 </Text>
                                 <Image
                                   source={{ uri: item.message }}
@@ -226,30 +232,67 @@ export class Conversation extends Component {
                               </View>
                             </View>
                           ) : (
-                              <View style={{ flexDirection: 'row', marginTop: 15 }}>
-                                <View style={styles.layOut}>
-                                  <View style={styles.imageView}>
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  alignSelf: 'flex-end',
+                                  marginTop: 30,
+                                }}>
+                                <View style={{}}>
+                                  <Text style={styles.box}>{item.message}</Text>
+                                </View>
+                                <View style={{ marginRight: 7, alignItems: 'center' }}>
+                                  <View style={styles.imageView2}>
                                     <Image
-                                      source={otherUser.image ? { uri: otherUser.image } : Images.dummyPic}
+                                      source={this.props.userProfile.image ? { uri: this.props.userProfile.image } : Images.dummyPic}
                                       style={styles.profile}
                                     />
                                   </View>
-                                  <Text style={styles.profileNameIn}>{otherUser.fName + ' ' + otherUser.lName}</Text>
-                                </View>
-                                <View style={{}}>
-                                  <Text style={styles.balloon}>
-                                    {item.message}
+                                  <Text style={styles.profileNameOut}>
+                                    {this.props.userProfile.first_name}
                                   </Text>
                                 </View>
                               </View>
-                            );
-                      })}
-                    </>
-                  );
-                })
-                : null}
-            </View>
-          </Header>
+                            )
+                        ) : item.type === 'image' ? (
+                          <View>
+                            <View style={styles.otherUserImage}>
+                              <Text style={styles.UpOtherNmae}>
+                                {otherUser.fName + ' ' + otherUser.lName}
+                              </Text>
+                              <Image
+                                source={{ uri: item.message }}
+                                style={styles.Images}
+                              />
+                            </View>
+                          </View>
+                        ) : (
+                            <View style={{ flexDirection: 'row', marginTop: 15 }}>
+                              <View style={styles.layOut}>
+                                <View style={styles.imageView}>
+                                  <Image
+                                    source={otherUser.image ? { uri: otherUser.image } : Images.dummyPic}
+                                    style={styles.profile}
+                                  />
+                                </View>
+                                <Text style={styles.profileNameIn}>{otherUser.fName + ' ' + otherUser.lName}</Text>
+                              </View>
+                              <View style={{}}>
+                                <Text style={styles.balloon}>
+                                  {item.message}
+                                </Text>
+                              </View>
+                            </View>
+                          );
+                    })}
+                  </>
+                );
+              })
+              : null}
+          </View>
+          {!this.state.isLoading && this.state.messages.length < 1 && <TouchableOpacity style={{ backgroundColor: '#397471', width: 200, alignSelf: 'center', marginTop: 100, padding: 8, borderRadius: 10, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ color: '#fff', fontSize: 20 }}> Start Group Chat</Text>
+          </TouchableOpacity>}
         </ScrollView>
 
         <ImagePick
@@ -292,6 +335,25 @@ export class Conversation extends Component {
 const styles = EStyleSheet.create({
   container: {
     height: '100%',
+  },
+  title: {
+    fontSize: '14rem',
+    fontWeight: '500',
+    textAlign: 'center',
+    color: '#FFF',
+  },
+  titleView: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: '50rem',
+    paddingHorizontal: '15rem',
+  },
+  headerView: {
+    minHeight: '50rem',
+    marginBottom: 2,
+    shadowOffset: { width: 0, height: 0.5 },
   },
   Line: {
     borderBottomColor: '#63B199',
@@ -363,8 +425,6 @@ const styles = EStyleSheet.create({
     alignSelf: 'center',
     padding: '5rem',
     width: '100%',
-    bottom: 0,
-    position: 'absolute',
   },
   btnSend: {
     width: '40rem',

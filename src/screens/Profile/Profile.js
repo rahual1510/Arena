@@ -41,6 +41,7 @@ export class Profile extends Component {
         return (
             <Header
                 title="Profile"
+                nomap={false}
                 image={
                     this.props.userProfile
                         ? { uri: this.props.userProfile.image }

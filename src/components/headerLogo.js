@@ -134,14 +134,14 @@ class headerLogo extends Component {
                             position: 'absolute',
                         }}>
                         {noLogo ? null : image ? (
-                            <View>
+                            <TouchableOpacity onPress={() => onImagePress()}>
                                 <Image source={image} style={styles.profilePic} />
-                                <TouchableOpacity
-                                    style={{ alignSelf: 'flex-end' }}
-                                    onPress={() => onImagePress()}>
+                                <View
+                                    style={{ right: 10, position: 'absolute', bottom: -10, backgroundColor: '#fff', borderRadius: 30, padding: 8 }}
+                                >
                                     <Image source={icon} />
-                                </TouchableOpacity>
-                            </View>
+                                </View>
+                            </TouchableOpacity>
                         ) : (
                                 <Image source={Images.headerImage} style={{}} />
                             )}

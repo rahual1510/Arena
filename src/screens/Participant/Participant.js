@@ -87,13 +87,13 @@ export class Participant extends Component {
         console.log('Participant Listtttttt===>', response);
 
         if (!response) {
-          alert('no data found');
+          // alert('no data found');
         } else if (response.data.length === 0) {
-          alert('no data found');
+          // alert('no data found');
         } else {
-          this.state.list = response.data;
+          this.setState({ list: response.data })
           let eventUser = [];
-          this.state.list.map((item, index) => {
+          response.data.map((item, index) => {
             eventUser.push({
               fName: item.first_name,
               lName: item.last_name,
@@ -102,7 +102,6 @@ export class Participant extends Component {
             })
           })
           this.setState({ eventUser: eventUser })
-          console.log('Detailsssssssssssssssssss===>', this.state.list);
         }
         this.setState({ isLoading: false });
       })
@@ -135,8 +134,12 @@ export class Participant extends Component {
           users: this.state.eventUser,
         })} showMessageIcon={true} donshowmap={true} title={'PARTICIPANTS'} search back goBack={() => this.props.navigation.goBack()}  >
           <View>
+            {this.state.list.length > 0 && <TouchableOpacity style={{ backgroundColor: '#397471', width: 200, alignSelf: 'center', marginVertical: 20, padding: 8, borderRadius: 10, justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ color: '#fff', fontSize: 20 }}> Start Group Chat</Text>
+            </TouchableOpacity>}
+
+            {this.state.list.length < 1 && <Text style={{ color: '#636363', fontSize: 20, alignSelf: 'center', margin: 20 }}>No participants</Text>}
             {this.state.list.map((item, index) => {
-              console.log('lisstttttttttttt===>', item);
               return (
                 <View style={{ flexDirection: 'row' }}>
 
@@ -145,8 +148,8 @@ export class Participant extends Component {
                     imageUri={{ uri: item.image }}
                     FirstName={item.first_name}
                     lastName={item.last_name}
-                    message={that.getDistance(item.lat, item.lng)}
-                    sport={item.ability_info}
+                    message={item.city + ', ' + item.zipcode}
+                    // sport={item.ability_info}
                   />
                   <TouchableOpacity onPress={() => {
                     this.props.navigation.navigate('PublicAccepted', { config: item.id });

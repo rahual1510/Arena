@@ -17,76 +17,76 @@ const PickerComponent = (props) => {
 
         onChange(number)
 
-        let i = countryList.findIndex((obj)=>obj.dial_code==number)
+        let i = countryList.findIndex((obj) => obj.dial_code == number)
 
-        if(i>=0) {
+        if (i >= 0) {
             fnc(i)
             onChange('')
         }
     }
 
     return (
-        <TouchableOpacity activeOpacity={1} onPress={()=>setShow(true)} style={[Styles.borderBottom, Styles.container, phone ? null : { justifyContent:'space-between', paddingVertical: dp(5) }  ]} disabled={disabled} >
+        <TouchableOpacity activeOpacity={1} onPress={() => setShow(true)} style={[Styles.borderBottom, Styles.container, phone ? null : { justifyContent: 'space-between', paddingVertical: dp(5) }]} disabled={disabled} >
 
-            <View style={{flexDirection:'row', alignItems:'center'}} >
-                
+            <View style={{ flexDirection: 'row', alignItems: 'center' }} >
+
                 {country || phone ?
                     <Image source={{ uri: `https://www.countryflags.io/${countryList[value].code}/flat/64.png` }} style={Styles.flag} />
                     : null}
-                    
-                {phone?
-                    <Image source={Images.downarrow} style={Styles.downArrow} />
-                : null}
 
-                <Text style={{color:value>=0? null : '#909090'}} >
-                {value>=0? 
-                    country ? countryList[value].name 
-                        : phone? countryList[value].dial_code 
-                            : sport? list[value].name 
-                        : list[value] 
-                    : placeholder}
+                {phone ?
+                    <Image source={Images.downarrow} style={Styles.downArrow} />
+                    : null}
+
+                <Text style={{ color: value >= 0 ? '#909090' : null }} >
+                    {value >= 0 ?
+                        country ? countryList[value].name
+                            : phone ? countryList[value].dial_code
+                                : sport ? list[value].name
+                                    : list[value]
+                        : placeholder}
                 </Text>
 
             </View>
 
-            {phone? 
-                <TextInput 
-                    placeholder={strings.phone} 
-                    value={valueInput} 
-                    onChangeText={(text)=>onChangeNumber(text)} 
-                    style={Styles.textInput} 
-                    placeholderTextColor='#909090' 
-                    maxLength={10} 
+            {phone ?
+                <TextInput
+                    placeholder={strings.phone}
+                    value={valueInput}
+                    onChangeText={(text) => onChangeNumber(text)}
+                    style={Styles.textInput}
+                    placeholderTextColor='#909090'
+                    maxLength={10}
                     keyboardType='phone-pad'
                     editable={!disabled}
                 />
-            :
-                <Image source={Images.downarrow} style={Styles.downArrow} /> 
+                :
+                <Image source={Images.downarrow} style={Styles.downArrow} />
             }
-            
+
             <Modal
                 visible={show}
                 transparent={true}
                 animated
                 animationType='slide'
             >
-                <TouchableOpacity activeOpacity={1} onPress={()=>setShow(false)} style={Styles.listOuter} >
+                <TouchableOpacity activeOpacity={1} onPress={() => setShow(false)} style={Styles.listOuter} >
 
                     <View style={[Styles.list, commonStyles.shadow]} >
-                        <FlatList 
-                            data={country || phone? countryList : list}
-                            renderItem={({item, index})=>{
+                        <FlatList
+                            data={country || phone ? countryList : list}
+                            renderItem={({ item, index }) => {
                                 return (
-                                    <TouchableOpacity key={`option${index}`} style={Styles.listItem} onPress={()=>{
+                                    <TouchableOpacity key={`option${index}`} style={Styles.listItem} onPress={() => {
                                         setShow(false)
                                         fnc(index)
                                     }} >
-                                        <Text>{country || sport? item.name : phone? item.name + ' ' + item.dial_code : item}</Text>
+                                        <Text>{country || sport ? item.name : phone ? item.name + ' ' + item.dial_code : item}</Text>
                                     </TouchableOpacity>
                                 )
                             }}
-                            ItemSeparatorComponent={()=><View style={[commonStyles.seperator, {width:'90%', alignSelf:'center'}]} />}
-                            keyExtractor={(item, index)=>`option${item}${index}`}
+                            ItemSeparatorComponent={() => <View style={[commonStyles.seperator, { width: '90%', alignSelf: 'center' }]} />}
+                            keyExtractor={(item, index) => `option${item}${index}`}
                         />
                     </View>
 
@@ -115,34 +115,34 @@ const Styles = EStyleSheet.create({
         marginHorizontal: '4rem'
     },
     listOuter: {
-        alignItems:'center', 
-        justifyContent:'center', 
-        flex:1, 
-        backgroundColor:'rgba(0,0,0,0.5)'
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)'
     },
     list: {
-        width:'80%', 
-        maxHeight:'80%', 
-        backgroundColor:'#FFF', 
-        borderRadius:10
+        width: '80%',
+        maxHeight: '80%',
+        backgroundColor: '#FFF',
+        borderRadius: 10
     },
     listItem: {
-        padding: '12rem', 
-        width:'90%', 
-        alignSelf:'center' 
+        padding: '12rem',
+        width: '90%',
+        alignSelf: 'center'
     },
-    container: { 
+    container: {
         marginBottom: '10rem',
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        paddingHorizontal:'10rem',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: '10rem',
     },
     textInput: {
-        fontSize:'13rem',
-        textAlignVertical:'center',
+        fontSize: '13rem',
+        textAlignVertical: 'center',
         marginLeft: '10rem',
         paddingVertical: '6rem',
-        flex:1
+        flex: 1
     }
 
 })

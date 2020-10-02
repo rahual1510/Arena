@@ -1,8 +1,5 @@
 const Config ={
     serverURL: 'https://dev.dashboardarena.com/api/v1/',
-
-
-
     register: 'register',
     login: 'login',
     socialLogin: 'social_login',
